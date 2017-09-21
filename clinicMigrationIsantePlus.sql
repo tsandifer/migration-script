@@ -5,8 +5,10 @@ BEGIN
  -- DECLARE a CHAR(16);
   
   DECLARE @visit_type_id INT;
-  DECLARE obs_datetime_,date_created_ datetime;
-
+  DECLARE obs_datetime_,@date_created,@encounter_datetime, datetime;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE; 
+  DECLARE @obs_id,@person_id,@concept_id,@encounter_id,@location_id INT;
+  DECLARE @referHosp,@referVctCenter,@referPmtctProg,@referOutpatStd,@referCommunityBasedProg,@firstCareOtherFacText varchar(10);
  
 select visit_type_id into @visit_type_id from visit_type where uuid='7b0f5697-27e3-40c4-8bae-f4049abfb4ed';
 
@@ -153,24 +155,196 @@ v.vitalWeight<>'';
 /*END OF SIGNES VITAUX MENU*/
 
 
+/*STARTING SOURCE DE RÉFÉRENCE MENU*/ 
+DECLARE cursor source_reference for 
+SELECT DISTINCT e.patient_id,5089,e.encounter_id,e.encounter_datetime,e.location_id,
+referHosp,referVctCenter,referPmtctProg,referOutpatStd,referCommunityBasedProg,firstCareOtherFacText,e.date_created
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and e.encounter_datetime = concat(v.visitdateyy,'-',v.visitdatemm,'-',v.visitdatedd) AND 
+(referHosp=1 or referVctCenter=1 or referPmtctProg=1 or referOutpatStd=1 or referCommunityBasedProg=1 or firstCareOtherFacText=1);
+ 
+OPEN source_reference;
+
+source_reference_loop: LOOP
+  FETCH source_reference INTO @person_id,@concept_id,@encounter_id,@encounter_datetime,@location_id, @referHosp,
+	                          @referVctCenter,@referPmtctProg,@referOutpatStd,@referCommunityBasedProg,@firstCareOtherFacText,@date_created;
+    IF done THEN
+      LEAVE source_reference;
+    END IF;
+	
+
+	/*MIGRATION FOR Hôpital (patient a été hospitalisé antérieurement)*/
+	if(@referHosp=1) then 
+	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+	values (@person_id,@concept_id,@encounter_id_,@obs_datetime,@location_id,5485,1,@date_created,uuid());
+	end if;
+	
+	/*MIGRATION FOR Centres CDV intégrés*/
+	if(@referVctCenter=1) then 
+	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+	values (@person_id,@concept_id,@encounter_id_,@obs_datetime,@location_id,159940,1,@date_created,uuid());
+	end if;
+
+	
+	/*MIGRATION FOR Programme PTME*/
+	if(@referPmtctProg=1) then 
+	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+	values (@person_id,@concept_id,@encounter_id_,@obs_datetime,@location_id,159937,1,@date_created,uuid())
+	end if;
+	
+	/*MIGRATION FOR Clinique Externe*/
+	if(@referOutpatStd=1) then 
+	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+	values (@person_id,@concept_id,@encounter_id_,@obs_datetime,@location_id,160542,1,@date_created,uuid());
+	end if;
+	
+    /*MIGRATION FOR Programmes communautaires*/
+	if(@referCommunityBasedProg=1) then 
+	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+	values (@person_id,@concept_id,@encounter_id_,@obs_datetime,@location_id,159938,1,@date_created,uuid());
+	end if;
+		
+	/*MIGRATION FOR Transfert d'un autre établissement de santé*/
+	if(@firstCareOtherFacText<>'') then 
+	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+	values (@person_id,@concept_id,@encounter_id_,@obs_datetime,@location_id,5622,1,@date_created,uuid());
+	end if;
+		
+	/*END OF SOURCE DE RÉFÉRENCE MENU*/
+
+  END LOOP;
+  
+  CLOSE source_reference;
+  
+  
+  	
+	/*STARTING TEST ANTICORPS VIH MENU*/
+	   /*Migration for Date du premier test (anticorps) VIH positif*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160082,e.encounter_id,e.encounter_datetime,e.location_id,
+	CASE WHEN v.firstTestYy<>'' AND v.firstTestMm<>'' THEN CONCAT(v.firstTestYy,'-',v.firstTestMm,'-',01)
+		ELSE NULL
+	END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and e.encounter_datetime = concat(v.visitdateyy,'-',v.visitdatemm,'-',v.visitdatedd) AND 
+v.firstTestYy<>'' AND v.firstTestMm<>'';
+		
+		/*Migration for Établissement où le test a été réalisé*/
+		 /*Cet établissement */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159936,e.encounter_id,e.encounter_datetime,e.location_id,
+	CASE WHEN itech.vitals.firstTestThisFac=1 THEN 163266
+		ELSE NULL
+	END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and e.encounter_datetime = concat(v.visitdateyy,'-',v.visitdatemm,'-',v.visitdatedd) AND 
+v.firstTestThisFac=1;
+		
+		/*Autre */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,comments,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159936,e.encounter_id,e.encounter_datetime,e.location_id,
+	CASE WHEN itech.vitals.firstTestOtherFac=1 THEN 5622
+		ELSE NULL
+	END,v.firstTestOtherFacText,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and e.encounter_datetime = concat(v.visitdateyy,'-',v.visitdatemm,'-',v.visitdatedd) AND 
+v.firstTestOtherFac=1;		
+	/*END OF TEST ANTICORPS VIH MENU*/
  
  
+ 	/*STARTING ÉTAT DE FONCTIONNEMENT MENU*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162753,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.functionalStatus=1 THEN 159468
+	 WHEN v.functionalStatus=2 THEN 160026
+	 WHEN v.functionalStatus=4 THEN 162752
+	 ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and e.encounter_datetime = concat(v.visitdateyy,'-',v.visitdatemm,'-',v.visitdatedd) AND 
+		AND v.functionalStatus>0;
+	/*END OF ÉTAT DE FONCTIONNEMENT MENU*/
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+ /*STARTING MIGRATION FOR MODE PROBABLE DE TRANSMISSION DU VIH MENU*/
+		/*Rapports sexuels avec un homme*/
+		/*Rapports sexuels avec une femme*/
+		/*Injection de drogues*/
+		/*Bénéficier de sang/dérivé sanguin*/
+		/*Migration FOR Transmission mère a enfant*/
+		/*MIGRATION FOR - homme bisexuel */
+		/*MIGRATION FOR Rapports hétérosexuelles avec :
+		  - personne SIDA/VIH+
+		*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1061,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN itech.riskAssessments.riskID=1 AND itech.riskAssessments.riskAnswer=1 THEN 163290
+		CASE WHEN v.riskID=3 AND v.riskAnswer=1 THEN 163291
+		CASE WHEN v.riskID=9 AND v.riskAnswer=1 THEN 105
+		CASE WHEN v.riskID=15 AND v.riskAnswer=1 THEN 1063
+		CASE WHEN v.riskID=14 AND v.riskAnswer=1 THEN 163273
+		CASE WHEN v.riskID=19 AND v.riskAnswer=1 THEN 163289
+		CASE WHEN v.riskID=5 AND v.riskAnswer=1 THEN 105
+		CASE WHEN v.riskID=6 AND v.riskAnswer=1 THEN 163275
+		CASE WHEN v.riskID=31 AND v.riskAnswer=1 THEN 1063
+		ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.riskAssessments v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and e.encounter_datetime = concat(v.visitdateyy,'-',v.visitdatemm,'-',v.visitdatedd) AND 
+v.riskID in (1,3,5,6,9,14,15,19,31) and v.riskAnswer=1;
+
+		/*FOR THE DATE*//*Bénéficier de sang/dérivé sanguin*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163268,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.riskID=15 AND v.riskAnswer=1 and v.riskYy>1 then concat(riskYy,'-',ifnull(v.riskMm,'01'),'-',ifnull(v.riskDd,'01'))
+	 else null
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.riskAssessments v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and e.encounter_datetime = concat(v.visitdateyy,'-',v.visitdatemm,'-',v.visitdatedd) AND 
+v.riskID=15 and v.riskAnswer=1 and ifnull(v.riskYy,0)>0;
+		
+/*MIGRATION FOR Accident d'exposition au sang*/
+	/*Migration for obsgroup*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163288,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.riskAssessments v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and e.encounter_datetime = concat(v.visitdateyy,'-',v.visitdatemm,'-',v.visitdatedd) AND 
+v.riskID=12 and v.riskAnswer=1;
+
+set @obs_id=last_insert_id();
+
+		
+		/*migration for the concept*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160581,e.encounter_id,e.encounter_datetime,e.location_id,@obs_id,
+CASE WHEN v.riskID=12 AND v.riskAnswer=1 THEN 163274
+	 ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.riskAssessments v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and e.encounter_datetime = concat(v.visitdateyy,'-',v.visitdatemm,'-',v.visitdatedd) AND 
+v.riskID=12 and v.riskAnswer=1;
+		/*migration for the date*/
+		
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162601,e.encounter_id,e.encounter_datetime,e.location_id,@obs_id,
+CASE WHEN v.riskID=12 AND v.riskAnswer=1 and v.riskYy>1 then concat(riskYy,'-',ifnull(v.riskMm,'01'),'-',ifnull(v.riskDd,'01'))
+	 else null
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.riskAssessments v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and e.encounter_datetime = concat(v.visitdateyy,'-',v.visitdatemm,'-',v.visitdatedd) AND 
+v.riskID=12 and v.riskAnswer=1 and ifnull(v.riskYy,0)>0;		
+	
+	/*END OF MIGRATION FOR MODE PROBABLE DE TRANSMISSION DU VIH MENU*/
  
  
  
