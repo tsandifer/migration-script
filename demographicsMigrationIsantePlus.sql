@@ -42,7 +42,7 @@ from person p, itech.patient j,itech.allowedDisclosures a, encounter e
  update obs set obs_group_id=null where person_id in (select p.person_id from person p,itech.patient p1 where p1.patGuid=p.uuid);
  delete from obs where person_id in (select p.person_id from person p,itech.patient p1 where p1.patGuid=p.uuid);
  delete from openmrs.encounter where patient_id in (select p.person_id from person p,itech.patient p1 where p1.patGuid=p.uuid);
-
+ 
  
 alter table itech.patient modify person_id int not null;
 alter table itech.patient drop primary key;
