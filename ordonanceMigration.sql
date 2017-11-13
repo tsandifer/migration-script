@@ -1,4 +1,5 @@
 DELIMITER $$ 
+drop procedure if exists ordonanceMigration;
 CREATE PROCEDURE ordonanceMigration()
 BEGIN
   DECLARE done INT DEFAULT FALSE;
