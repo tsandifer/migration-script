@@ -60,8 +60,10 @@ end if;
  
  if (vstatus=0) then 
 UPDATE itech.encounter SET encGuid=uuid();
-  
+select count(*) into mmmIndex from information_schema.statistics where table_name = 'encounter' and index_name = 'eGuid' and table_schema ='itech';
+if (mmmIndex=0) then    
 CREATE UNIQUE INDEX eGuid ON itech.encounter (encGuid);
+end if;
 /* end update encounter itech table with uuid */
 select 2 as encounter;
 insert into itech.migration_status(procedures,section,status) values('clinicMigration','update encounter',1);
