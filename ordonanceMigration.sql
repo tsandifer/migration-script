@@ -1,5 +1,8 @@
 DELIMITER $$ 
+<<<<<<< HEAD
 drop procedure if exists ordonanceMigration;
+=======
+>>>>>>> d0e3541c99b31eba5d47ab9e3a5fdf522593a760
 CREATE PROCEDURE ordonanceMigration()
 BEGIN
   DECLARE done INT DEFAULT FALSE;

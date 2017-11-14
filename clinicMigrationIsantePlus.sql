@@ -60,8 +60,14 @@ end if;
  
  if (vstatus=0) then 
 UPDATE itech.encounter SET encGuid=uuid();
+<<<<<<< HEAD
   
+=======
+select count(*) into mmmIndex from information_schema.statistics where table_name = 'encounter' and index_name = 'eGuid' and table_schema ='itech';
+if (mmmIndex=0) then    
+>>>>>>> d0e3541c99b31eba5d47ab9e3a5fdf522593a760
 CREATE UNIQUE INDEX eGuid ON itech.encounter (encGuid);
+end if;
 /* end update encounter itech table with uuid */
 select 2 as encounter;
 insert into itech.migration_status(procedures,section,status) values('clinicMigration','update encounter',1);
@@ -3551,6 +3557,7 @@ FROM itech.encounter c, encounter e, itech.medicalEligARVs v
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.medElig=1	AND (v.PMTCT=1);
+<<<<<<< HEAD
 
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
@@ -3634,6 +3641,91 @@ v.medElig=1	AND (v.nephropathieVih=1);
 
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+=======
+
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE  WHEN v.medEligHAART=1 THEN 163327 else null END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.medicalEligARVs v 	
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.medElig=1	AND (v.medEligHAART=1);	
+
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.formerARVtherapy=1 THEN 1087 else null END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.medicalEligARVs v 	
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.medElig=1	AND (v.formerARVtherapy=1);	
+
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.PEP=1 THEN 1691 else null END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.medicalEligARVs v 	
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.medElig=1	AND (v.PEP=1);		
+
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.coinfectionTbHiv=1 THEN 163324 else null END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.medicalEligARVs v 	
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.medElig=1	AND (v.coinfectionTbHiv=1);	
+
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.coinfectionHbvHiv=1 THEN 163325 else null END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.medicalEligARVs v 	
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.medElig=1	AND (v.coinfectionHbvHiv=1);
+
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.coupleSerodiscordant=1 THEN 6096 else null END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.medicalEligARVs v 	
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.medElig=1	AND ( v.coupleSerodiscordant=1);	
+
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.pregnantWomen=1 THEN 1434 else null END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.medicalEligARVs v 	
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.medElig=1	AND (v.pregnantWomen=1);
+
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.breastfeedingWomen=1 THEN 5632 else null END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.medicalEligARVs v 	
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.medElig=1	AND (v.breastfeedingWomen=1);
+
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.patientGt50ans=1 THEN 163328 else null END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.medicalEligARVs v 	
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.medElig=1	AND (v.patientGt50ans=1);	
+
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.nephropathieVih=1 THEN 153701 else null END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.medicalEligARVs v 	
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.medElig=1	AND (v.nephropathieVih=1);
+
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162225,e.encounter_id,e.encounter_datetime,e.location_id,
+>>>>>>> d0e3541c99b31eba5d47ab9e3a5fdf522593a760
 CASE WHEN v.protocoleTestTraitement=1 THEN 163329 END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.medicalEligARVs v 	
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
