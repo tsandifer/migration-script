@@ -1,8 +1,7 @@
+drop procedure if exists encounter_Migration;
 DELIMITER $$ 
 
-drop procedure if exists visitEncounterMigration;
-
-CREATE PROCEDURE visitEncounterMigration()
+CREATE PROCEDURE encounter_Migration()
 BEGIN
   DECLARE done INT DEFAULT FALSE;
  -- DECLARE a CHAR(16);
@@ -20,6 +19,8 @@ select visit_type_id into vvisit_type_id from visit_type where uuid='7b0f5697-27
  /* Visit Migration
  * find all unique patientid, visitdate instances in the encounter table and consider these visits
  */
+ SET SQL_SAFE_UPDATES = 0;
+
  set vstatus=0;
  select status into vstatus from itech.migration_status where section='visit';
  
@@ -87,8 +88,8 @@ INSERT INTO itech.typeToForm (encounterType, uuid) VALUES
  /* create index on encounter table */
  select count(*) into mmmIndex from information_schema.statistics where table_name = 'encounter' and index_name = 'mmm' and table_schema ='openmrs';
 
-  if (mmmIndex=0) then 
- create unique index mmm on encounter (patient_id,location_id,form_id,visit_id, encounter_datetime, encounter_type,date_created)
+if(mmmIndex=0) then 
+ create unique index mmm on encounter (patient_id,location_id,form_id,visit_id, encounter_datetime, encounter_type,date_created);
  end if;
  
   insert into itech.migration_status(procedures,section,status) values('clinicMigration','mapping form',1);
@@ -98,6 +99,7 @@ INSERT INTO itech.typeToForm (encounterType, uuid) VALUES
  /* remove old obs and encounter data */
 update obs set obs_group_id=null where encounter_id in (select encounter_id from encounter where encounter_type<>32);
 delete from obs where encounter_id in (select encounter_id from encounter where encounter_type<>32);
+delete from isanteplus_form_history;
 delete from encounter where encounter_type<>32; 
 
 /* encounter migration data */ 

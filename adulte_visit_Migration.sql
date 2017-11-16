@@ -1,15 +1,16 @@
+
+drop procedure if exists adult_visit_migration;
 DELIMITER $$ 
-drop procedure if exists firstVisitMigration;
-CREATE PROCEDURE firstVisitMigration()
+
+CREATE PROCEDURE adult_visit_migration()
 BEGIN
   DECLARE done INT DEFAULT FALSE;
- -- DECLARE a CHAR(16);
-  DECLARE vstatus;
+
   DECLARE vvisit_type_id INT;
   DECLARE obs_datetime_,vobs_datetime,vdate_created,vencounter_datetime datetime;
   DECLARE vobs_id,vperson_id,vconcept_id,vencounter_id,vlocation_id INT;
   DECLARE vreferHosp,vreferVctCenter,vreferPmtctProg,vreferOutpatStd,vreferCommunityBasedProg,vfirstCareOtherFacText varchar(10);
-  
+ 
 
 DECLARE source_reference CURSOR  for 
 SELECT DISTINCT e.patient_id,159936,e.encounter_id,e.encounter_datetime,e.location_id,

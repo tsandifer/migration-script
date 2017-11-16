@@ -1,5 +1,8 @@
+
+drop procedure if exists pediatric_visit_Migration;
+
 DELIMITER $$ 
-CREATE PROCEDURE clinicPediatricMigration()
+CREATE PROCEDURE pediatric_visit_Migration()
 BEGIN
   DECLARE done INT DEFAULT FALSE;
  -- DECLARE a CHAR(16);
