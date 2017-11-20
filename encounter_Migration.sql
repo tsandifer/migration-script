@@ -12,7 +12,7 @@ DECLARE uuid_encounter CURSOR  for SELECT DISTINCT e.patientID,e.encounter_id FR
 DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE; 
 
 create table if not exists itech.obs_concept_group (obs_id int,person_id int,concept_id int,encounter_id int);
-create table if not exists itech.migration_status(id int auto_increment primary key,procedures text,section text,status boolean);
+create table if not exists itech.migration_status(id int auto_increment primary key,procedures text,section text,status boolean,runDate Date);
 
 select visit_type_id into vvisit_type_id from visit_type where uuid='7b0f5697-27e3-40c4-8bae-f4049abfb4ed';
 
@@ -31,7 +31,7 @@ FROM person p, itech.patient it, itech.encounter e
 WHERE p.uuid = it.patGuid AND it.patientid = e.patientid AND
 e.encounterType in (1,2,3,4,5,6,12,14,16,17,18,19,20,21,24,25,26,27,28,29,31);
 
-insert into itech.migration_status(procedures,section,status) values('clinicMigration','visit',1);
+insert into itech.migration_status(procedures,section,status,runDate) values('clinicMigration','visit',1,now());
 end if;
 select 1 as visit;
 
@@ -40,7 +40,7 @@ select status into vstatus from itech.migration_status where section='alter enco
 /* update encounter itech table with uuid */
 if (vstatus=0) then 
 ALTER TABLE itech.encounter ADD encGuid VARCHAR(36) NOT NULL;
-insert into itech.migration_status(procedures,section,status) values('clinicMigration','alter encounter',1);
+insert into itech.migration_status(procedures,section,status,runDate) values('clinicMigration','alter encounter',1,now());
 end if;
 
  set vstatus=0;
@@ -52,7 +52,7 @@ UPDATE itech.encounter SET encGuid=uuid();
 CREATE UNIQUE INDEX eGuid ON itech.encounter (encGuid);
 /* end update encounter itech table with uuid */
 select 2 as encounter;
-insert into itech.migration_status(procedures,section,status) values('clinicMigration','update encounter',1);
+insert into itech.migration_status(procedures,section,status,runDate) values('clinicMigration','update encounter',1,now());
 end if;
 
 set vstatus=0;
@@ -92,7 +92,7 @@ if(mmmIndex=0) then
  create unique index mmm on encounter (patient_id,location_id,form_id,visit_id, encounter_datetime, encounter_type,date_created);
  end if;
  
-  insert into itech.migration_status(procedures,section,status) values('clinicMigration','mapping form',1);
+  insert into itech.migration_status(procedures,section,status,runDate) values('clinicMigration','mapping form',1,now());
  end if;
 
  
