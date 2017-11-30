@@ -212,7 +212,95 @@ v.functionalStatus>0;
 	/*END OF ÉTAT DE FONCTIONNEMENT MENU*/
  
  
- /*STARTING MIGRATION FOR MODE PROBABLE DE TRANSMISSION DU VIH MENU*/
+ /*STARTING ANTECEDENTS OBSTETRIQUES ET GROSSESSE MENU*/
+		/*GRAVIDA*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,5624,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.gravida<>'' THEN v.gravida
+     ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+AND v.gravida<>'';
+		
+		
+		/*PARA*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1053,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.para<>'' THEN v.para
+     ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+AND v.para<>'';
+		
+		/*Aborta*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1823,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.aborta<>'' THEN v.aborta
+     ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+AND v.aborta<>'';
+		
+		/*Enfants vivants*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1825,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.children<>'' THEN v.children
+     ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+AND v.children<>'';
+		
+		/*Grossesse actuelle*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,5272,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.pregnant=1 THEN 1065
+	 WHEN v.pregnant=2 THEN 1066
+	 WHEN v.pregnant=4 THEN 1067
+	 ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+AND v.pregnant<>'';
+		
+		/*Migration for Date du dernier Pap Test*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163267,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.papTestDd<1 AND v.papTestMm<1 AND v.papTestYy>0 THEN CONCAT(v.papTestYy,01,01)
+	 WHEN v.papTestDd<1 AND v.papTestMm>0 AND v.papTestYy>0 THEN CONCAT(v.papTestYy,v.papTestMm,01)
+	 WHEN v.papTestDd>0 AND v.papTestMm>0 AND v.papTestYy>0 THEN CONCAT(v.papTestYy,v.papTestMm,v.papTestDd)  
+	 ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+AND v.papTestYy>0;	
+		
+		/* Migration for Date des dernières règles*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1427,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.pregnantLmpDd<1 AND v.pregnantLmpMm<1 AND v.pregnantLmpYy>0 THEN CONCAT(v.pregnantLmpDd,01,01)
+	 WHEN v.pregnantLmpDd<1 AND v.pregnantLmpMm>0 AND v.pregnantLmpYy>0 THEN CONCAT(v.pregnantLmpYy,v.pregnantLmpMm,01)
+	 WHEN v.pregnantLmpDd>0 AND v.pregnantLmpMm>0 AND v.pregnantLmpYy>0 THEN CONCAT(v.pregnantLmpYy,v.pregnantLmpMm,v.pregnantLmpDd)  
+	 ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+AND v.pregnantLmpYy>0;	
+	
+	/*END OF ANTECEDENTS OBSTETRIQUES ET GROSSESSE MENU*/
+ 
+ 
+  /*STARTING MIGRATION FOR MODE PROBABLE DE TRANSMISSION DU VIH MENU*/
 		/*Rapports sexuels avec un homme*/
 		/*Rapports sexuels avec une femme*/
 		/*Injection de drogues*/
