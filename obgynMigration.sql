@@ -955,75 +955,123 @@ o.concept_id=71009 and o.value_text<>'';
 
 /* end of Troubles psychiatriques */
 
-/* end of ANTECEDENTS PERSONNELS/HABITUDES */
-
 /*Statut VIH */
- INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1169,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1169,e.encounter_id,e.encounter_datetime,e.location_id,
 case when o.value_numeric=1 then 1067
      when o.value_numeric=2 then 664
 	 when o.value_numeric=4 then 703
 	 else null
 end ,1,e.date_created,UUID()
- FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
-where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
 o.concept_id=71205 and o.value_numeric in (1,2,4);
 
 /*Date*/
- INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1169,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,date(o.value_datetime) ,1,e.date_created,UUID()
- FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
-where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1169,e.encounter_id,e.encounter_datetime,e.location_id,date(o.value_datetime) ,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
 o.concept_id=71206 and o.value_datetime is not null;
 
 /* Si positif, enrôlée en soins */
- INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,159811,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159811,e.encounter_id,e.encounter_datetime,e.location_id,
 case when o.value_numeric=1 then 1065
      when o.value_numeric=2 then 1065
 	 else null
 end ,1,e.date_created,UUID()
- FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
-where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
 o.concept_id=71212 and o.value_numeric in (1,2);
 
 
 /* CD4  */
- INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,159375,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159375,e.encounter_id,e.encounter_datetime,e.location_id,
 FindNumericValue(o.value_numeric),1,e.date_created,UUID()
- FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
-where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
 o.concept_id=71208 and o.value_numeric>0;
 /*Date  CD4 */
- INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,159376,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159376,e.encounter_id,e.encounter_datetime,e.location_id,
 date(o.value_datetime),1,e.date_created,UUID()
- FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
-where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
 o.concept_id=71226 and o.value_datetime is not null;
 
 /* ARV */
- INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,160117,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160117,e.encounter_id,e.encounter_datetime,e.location_id,
 case when o.value_numeric=1 then 160119
 	 else null
 end ,1,e.date_created,UUID()
- FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
-where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
 o.concept_id=71209 and o.value_numeric=1;
 
-
 /* médicaments */
- INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,163322,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,o.value_text,1,e.date_created,UUID()
- FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
-where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163322,e.encounter_id,e.encounter_datetime,e.location_id,o.value_text,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
 o.concept_id=71210 and o.value_text<>'';
 
+/*Date de début*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,date(o.value_datetime) ,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=71211 and o.value_datetime is not null;
 
 
+/* Prophylaxie  Cotrimoxazole*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1109,e.encounter_id,e.encounter_datetime,e.location_id,105281,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=71406 and o.value_boolean=1;
 
+/* Prophylaxie  Azythromycine*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1110,e.encounter_id,e.encounter_datetime,e.location_id,71780,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=71407 and o.value_boolean=1;
+
+/* Prophylaxie  Fluconazole*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1109,e.encounter_id,e.encounter_datetime,e.location_id,76488,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=71408 and o.value_boolean=1;
+
+/* Prophylaxie  INH*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1110,e.encounter_id,e.encounter_datetime,e.location_id,1679,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=7941 and o.value_boolean=1;
+
+/*Médicaments actuels */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,comments,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159367,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_text<>'' then 1065
+     else null
+end ,o.value_text,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=69999 and o.value_text<>'';
+
+/*Remarque*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,161011,e.encounter_id,e.encounter_datetime,e.location_id,o.value_text,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=70745 and o.value_text<>'';
+
+/* end of ANTECEDENTS PERSONNELS/HABITUDES */
 
 
 
