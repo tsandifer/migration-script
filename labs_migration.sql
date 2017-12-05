@@ -12801,4 +12801,3 @@ create table if not exists itech.obs_concept_group (obs_id int,person_id int,con
 	
  END$$
 	DELIMITER ;
-	call labsMigration();
