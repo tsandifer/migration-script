@@ -616,4 +616,3 @@ BEGIN
 	
  END$$
 	DELIMITER ;
-	call discontinuationMigration();
