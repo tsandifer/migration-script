@@ -267,7 +267,7 @@ end case;
 
 insert into obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
 values (person_id_,'164966',encounter_id_,obs_datetime_,location_id_,creator_,date_created_,uuid_);
-
+select 
 set obs_id=last_insert_id();
 	
 insert into obs(person_id,concept_id,encounter_id,obs_group_id,obs_datetime,location_id,value_text,creator,date_created,uuid)

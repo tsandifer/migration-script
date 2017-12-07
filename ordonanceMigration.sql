@@ -1,4 +1,29 @@
+drop function if exists IsNumeric;
+CREATE FUNCTION IsNumeric (val varchar(255)) RETURNS tinyint 
+ RETURN val REGEXP '^(-|\\+){0,1}([0-9]+\\.[0-9]*|[0-9]*\\.[0-9]+|[0-9]+)$';
 
+DROP FUNCTION if exists FindNumericValue;
+DELIMITER $$
+ 
+CREATE FUNCTION FindNumericValue(val VARCHAR(255)) RETURNS VARCHAR(255)
+    DETERMINISTIC
+BEGIN
+  DECLARE idx INT DEFAULT 0;
+  IF ISNULL(val) THEN RETURN NULL; END IF;
+
+  IF LENGTH(val) = 0 THEN RETURN ""; END IF;
+ SET idx = LENGTH(val);
+  WHILE idx > 0 DO
+   IF IsNumeric(SUBSTRING(val,idx,1)) = 0 THEN
+    SET val = REPLACE(val,SUBSTRING(val,idx,1),"");
+    SET idx = LENGTH(val)+1;
+   END IF;
+    SET idx = idx - 1;
+  END WHILE;
+   RETURN val;
+END
+$$
+DELIMITER ;
 drop procedure if exists ordonanceMigration;
 DELIMITER $$ 
 CREATE PROCEDURE ordonanceMigration()
@@ -36,6 +61,10 @@ CASE WHEN o.concept_id=71642 AND o.value_boolean=1 THEN 1065
 END,1,e.date_created,UUID()
  FROM itech.encounter c, encounter e,itech.obs o
 where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and o.concept_id=71642 and o.value_boolean=1;	
+
+
+select 1 as test1;
+
 
 /* Abacavir(ABC) */
   /* migration group 1 */
@@ -101,12 +130,12 @@ v.drugID=1 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=1 and v.numDaysDesc>0;
+v.drugID=1 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -157,27 +186,27 @@ v.drugID=1 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=1 and v.dispAltNumDaysSpecify>0;
+v.drugID=1 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=1 and v.dispAltNumPills>0;
+v.drugID=1 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
 
-
+select 2 as test2;
 
 
 /* Combivir(AZT+3TC) */
@@ -244,12 +273,12 @@ v.drugID=8 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=8 and v.numDaysDesc>0;
+v.drugID=8 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -300,26 +329,26 @@ v.drugID=8 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=8 and v.dispAltNumDaysSpecify>0;
+v.drugID=8 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=8 and v.dispAltNumPills>0;
+v.drugID=8 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
-
+select 3 as test3;
 
 /* Didanosine */
   /* migration group 1 */
@@ -385,12 +414,12 @@ v.drugID=10 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=10 and v.numDaysDesc>0;
+v.drugID=10 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -441,26 +470,26 @@ v.drugID=10 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=10 and v.dispAltNumDaysSpecify>0;
+v.drugID=10 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=10 and v.dispAltNumPills>0;
+v.drugID=10 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
-
+select 4 as test4;
 
 /* Emtricitabine(FTC) */
   /* migration group 1 */
@@ -526,12 +555,12 @@ v.drugID=12 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=12 and v.numDaysDesc>0;
+v.drugID=12 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -582,27 +611,27 @@ v.drugID=12 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=12 and v.dispAltNumDaysSpecify>0;
+v.drugID=12 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=12 and v.dispAltNumPills>0;
+v.drugID=12 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
 
-
+select 5 as test5;
 
 /* Lamivudine(3TC)*/
   /* migration group 1 */
@@ -668,12 +697,13 @@ v.drugID=20 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=20 and v.numDaysDesc>0;
+v.drugID=20 and FindNumericValue(v.numDaysDesc)>0;
+
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -724,27 +754,27 @@ v.drugID=20 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=20 and v.dispAltNumDaysSpecify>0;
+v.drugID=20 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=20 and v.dispAltNumPills>0;
+v.drugID=20 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
 
-
+select 6 as test6;
 
 
 /* Stavudine(d4T) */
@@ -811,12 +841,12 @@ v.drugID=29 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=29 and v.numDaysDesc>0;
+v.drugID=29 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -867,26 +897,27 @@ v.drugID=29 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=29 and v.dispAltNumDaysSpecify>0;
+v.drugID=29 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=29 and v.dispAltNumPills>0;
+v.drugID=29 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
 
+select 7 as test7;
 
 
 /* Tenofovir(TNF) */
@@ -926,6 +957,7 @@ og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.drugID=31 and v.forPepPmtct in (1,2);
 
+select 71 as test71;
  /* dosage */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1444,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
@@ -940,6 +972,7 @@ og.person_id=e.patient_id and e.encounter_id=og.encounter_id and d.drugID=v.drug
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.drugID=31 and v.stdDosage=1;
 
+select 72 as test72;
  /* dosage alternative */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1444,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
@@ -950,15 +983,18 @@ og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.drugID=31 and v.altDosageSpecify<>'';
 
+select 73 as test73;
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=31 and v.numDaysDesc>0;
+v.drugID=31 and FindNumericValue(v.numDaysDesc)>0;
+
+select 730 as test730;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -996,6 +1032,7 @@ og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.drugID=31 and v.dispensed=1;
 
+select 74 as test74;
  /* Posologie alternative  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1444,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
@@ -1006,30 +1043,32 @@ og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.drugID=31 and v.dispAltDosageSpecify<>'';
 
+select 75 as test75;
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=31 and v.dispAltNumDaysSpecify>0;
+v.drugID=31 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
+select 76 as test76;
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=31 and v.dispAltNumPills>0;
+v.drugID=31 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
 
-
+select 8 as test8;
 
 
 /* Trizivir(ABC+AZT+3TC)*/
@@ -1096,12 +1135,12 @@ v.drugID=33 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=33 and v.numDaysDesc>0;
+v.drugID=33 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -1152,22 +1191,22 @@ v.drugID=33 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=33 and v.dispAltNumDaysSpecify>0;
+v.drugID=33 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=33 and v.dispAltNumPills>0;
+v.drugID=33 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -1238,12 +1277,12 @@ v.drugID=34 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=34 and v.numDaysDesc>0;
+v.drugID=34 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -1294,22 +1333,22 @@ v.drugID=34 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=34 and v.dispAltNumDaysSpecify>0;
+v.drugID=34 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=34 and v.dispAltNumPills>0;
+v.drugID=34 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -1380,12 +1419,12 @@ v.drugID=11 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=11 and v.numDaysDesc>0;
+v.drugID=11 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -1436,22 +1475,22 @@ v.drugID=11 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=11 and v.dispAltNumDaysSpecify>0;
+v.drugID=11 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=11 and v.dispAltNumPills>0;
+v.drugID=11 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -1523,12 +1562,12 @@ v.drugID=23 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=23 and v.numDaysDesc>0;
+v.drugID=23 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -1579,22 +1618,22 @@ v.drugID=23 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=23 and v.dispAltNumDaysSpecify>0;
+v.drugID=23 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=23 and v.dispAltNumPills>0;
+v.drugID=23 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -1666,12 +1705,12 @@ v.drugID=5 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=5 and v.numDaysDesc>0;
+v.drugID=5 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -1722,22 +1761,22 @@ v.drugID=5 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=5 and v.dispAltNumDaysSpecify>0;
+v.drugID=5 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=5 and v.dispAltNumPills>0;
+v.drugID=5 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -1809,12 +1848,12 @@ v.drugID=6 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=6 and v.numDaysDesc>0;
+v.drugID=6 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -1865,22 +1904,22 @@ v.drugID=6 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=6 and v.dispAltNumDaysSpecify>0;
+v.drugID=6 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=6 and v.dispAltNumPills>0;
+v.drugID=6 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -1950,12 +1989,12 @@ v.drugID=16 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=16 and v.numDaysDesc>0;
+v.drugID=16 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -2006,22 +2045,22 @@ v.drugID=16 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=16 and v.dispAltNumDaysSpecify>0;
+v.drugID=16 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=16 and v.dispAltNumPills>0;
+v.drugID=16 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -2094,12 +2133,12 @@ v.drugID=21 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=21 and v.numDaysDesc>0;
+v.drugID=21 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -2150,22 +2189,22 @@ v.drugID=21 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=21 and v.dispAltNumDaysSpecify>0;
+v.drugID=21 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=21 and v.dispAltNumPills>0;
+v.drugID=21 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -2238,12 +2277,12 @@ v.drugID=88 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=88 and v.numDaysDesc>0;
+v.drugID=88 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -2294,22 +2333,22 @@ v.drugID=88 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=88 and v.dispAltNumDaysSpecify>0;
+v.drugID=88 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=88 and v.dispAltNumPills>0;
+v.drugID=88 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -2381,12 +2420,12 @@ v.drugID=87 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=87 and v.numDaysDesc>0;
+v.drugID=87 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -2437,22 +2476,22 @@ v.drugID=87 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=87 and v.dispAltNumDaysSpecify>0;
+v.drugID=87 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=87 and v.dispAltNumPills>0;
+v.drugID=87 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -2494,12 +2533,12 @@ v.drugID=36 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=36 and v.numDaysDesc>0;
+v.drugID=36 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -2550,22 +2589,22 @@ v.drugID=36 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=36 and v.dispAltNumDaysSpecify>0;
+v.drugID=36 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=36 and v.dispAltNumPills>0;
+v.drugID=36 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -2608,12 +2647,12 @@ v.drugID=37 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=37 and v.numDaysDesc>0;
+v.drugID=37 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -2664,22 +2703,22 @@ v.drugID=37 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=37 and v.dispAltNumDaysSpecify>0;
+v.drugID=37 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=37 and v.dispAltNumPills>0;
+v.drugID=37 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -2721,12 +2760,12 @@ v.drugID=82 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=82 and v.numDaysDesc>0;
+v.drugID=82 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -2777,22 +2816,22 @@ v.drugID=82 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=82 and v.dispAltNumDaysSpecify>0;
+v.drugID=82 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=82 and v.dispAltNumPills>0;
+v.drugID=82 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -2836,12 +2875,12 @@ v.drugID=80 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=80 and v.numDaysDesc>0;
+v.drugID=80 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -2892,22 +2931,22 @@ v.drugID=80 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=80 and v.dispAltNumDaysSpecify>0;
+v.drugID=80 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=80 and v.dispAltNumPills>0;
+v.drugID=80 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -2950,12 +2989,12 @@ v.drugID=81 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=81 and v.numDaysDesc>0;
+v.drugID=81 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -3006,22 +3045,22 @@ v.drugID=81 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=81 and v.dispAltNumDaysSpecify>0;
+v.drugID=81 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=81 and v.dispAltNumPills>0;
+v.drugID=81 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -3066,12 +3105,12 @@ v.drugID=55 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=55 and v.numDaysDesc>0;
+v.drugID=55 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -3122,22 +3161,22 @@ v.drugID=55 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=55 and v.dispAltNumDaysSpecify>0;
+v.drugID=55 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=55 and v.dispAltNumPills>0;
+v.drugID=55 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -3181,12 +3220,12 @@ v.drugID=42 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=42 and v.numDaysDesc>0;
+v.drugID=42 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -3237,22 +3276,22 @@ v.drugID=42 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=42 and v.dispAltNumDaysSpecify>0;
+v.drugID=42 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=42 and v.dispAltNumPills>0;
+v.drugID=42 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -3297,12 +3336,12 @@ v.drugID=56 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=56 and v.numDaysDesc>0;
+v.drugID=56 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -3353,22 +3392,22 @@ v.drugID=56 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=56 and v.dispAltNumDaysSpecify>0;
+v.drugID=56 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=56 and v.dispAltNumPills>0;
+v.drugID=56 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -3413,12 +3452,12 @@ v.drugID=57 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=57 and v.numDaysDesc>0;
+v.drugID=57 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -3469,22 +3508,22 @@ v.drugID=57 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=57 and v.dispAltNumDaysSpecify>0;
+v.drugID=57 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=57 and v.dispAltNumPills>0;
+v.drugID=57 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -3530,12 +3569,12 @@ v.drugID=9 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=9 and v.numDaysDesc>0;
+v.drugID=9 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -3586,22 +3625,22 @@ v.drugID=9 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=9 and v.dispAltNumDaysSpecify>0;
+v.drugID=9 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=9 and v.dispAltNumPills>0;
+v.drugID=9 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -3645,12 +3684,12 @@ v.drugID=43 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=43 and v.numDaysDesc>0;
+v.drugID=43 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -3701,22 +3740,22 @@ v.drugID=43 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=43 and v.dispAltNumDaysSpecify>0;
+v.drugID=43 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=43 and v.dispAltNumPills>0;
+v.drugID=43 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -3761,12 +3800,12 @@ v.drugID=44 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=44 and v.numDaysDesc>0;
+v.drugID=44 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -3817,22 +3856,22 @@ v.drugID=44 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=44 and v.dispAltNumDaysSpecify>0;
+v.drugID=44 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=44 and v.dispAltNumPills>0;
+v.drugID=44 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -3877,12 +3916,12 @@ v.drugID=79 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=79 and v.numDaysDesc>0;
+v.drugID=79 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -3933,22 +3972,22 @@ v.drugID=79 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=79 and v.dispAltNumDaysSpecify>0;
+v.drugID=79 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=79 and v.dispAltNumPills>0;
+v.drugID=79 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -3992,12 +4031,12 @@ v.drugID=84 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=84 and v.numDaysDesc>0;
+v.drugID=84 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -4048,22 +4087,22 @@ v.drugID=84 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=84 and v.dispAltNumDaysSpecify>0;
+v.drugID=84 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=84 and v.dispAltNumPills>0;
+v.drugID=84 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -4107,12 +4146,12 @@ v.drugID=58 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=58 and v.numDaysDesc>0;
+v.drugID=58 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -4163,22 +4202,22 @@ v.drugID=58 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=58 and v.dispAltNumDaysSpecify>0;
+v.drugID=58 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=58 and v.dispAltNumPills>0;
+v.drugID=58 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -4222,12 +4261,12 @@ v.drugID=14 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=14 and v.numDaysDesc>0;
+v.drugID=14 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -4278,22 +4317,22 @@ v.drugID=14 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=14 and v.dispAltNumDaysSpecify>0;
+v.drugID=14 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=14 and v.dispAltNumPills>0;
+v.drugID=14 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -4338,12 +4377,12 @@ v.drugID=59 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=59 and v.numDaysDesc>0;
+v.drugID=59 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -4394,22 +4433,22 @@ v.drugID=59 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=59 and v.dispAltNumDaysSpecify>0;
+v.drugID=59 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=59 and v.dispAltNumPills>0;
+v.drugID=59 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -4455,12 +4494,12 @@ v.drugID=19 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=19 and v.numDaysDesc>0;
+v.drugID=19 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -4511,22 +4550,22 @@ v.drugID=19 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=19 and v.dispAltNumDaysSpecify>0;
+v.drugID=19 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=19 and v.dispAltNumPills>0;
+v.drugID=19 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -4570,12 +4609,12 @@ v.drugID=45 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=45 and v.numDaysDesc>0;
+v.drugID=45 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -4626,22 +4665,22 @@ v.drugID=45 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=45 and v.dispAltNumDaysSpecify>0;
+v.drugID=45 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=45 and v.dispAltNumPills>0;
+v.drugID=45 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -4688,12 +4727,12 @@ v.drugID=46 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=46 and v.numDaysDesc>0;
+v.drugID=46 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -4744,22 +4783,22 @@ v.drugID=46 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=46 and v.dispAltNumDaysSpecify>0;
+v.drugID=46 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=46 and v.dispAltNumPills>0;
+v.drugID=46 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -4804,12 +4843,12 @@ v.drugID=60 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=60 and v.numDaysDesc>0;
+v.drugID=60 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -4860,12 +4899,12 @@ v.drugID=60 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=60 and v.dispAltNumDaysSpecify>0;
+v.drugID=60 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
@@ -4875,7 +4914,7 @@ FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_g
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=60 and v.dispAltNumPills>0;
+v.drugID=60 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -4917,12 +4956,12 @@ v.drugID=64 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=64 and v.numDaysDesc>0;
+v.drugID=64 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -4973,22 +5012,22 @@ v.drugID=64 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=64 and v.dispAltNumDaysSpecify>0;
+v.drugID=64 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=64 and v.dispAltNumPills>0;
+v.drugID=64 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -5032,12 +5071,12 @@ v.drugID=85 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=85 and v.numDaysDesc>0;
+v.drugID=85 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -5088,22 +5127,22 @@ v.drugID=85 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=85 and v.dispAltNumDaysSpecify>0;
+v.drugID=85 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=85 and v.dispAltNumPills>0;
+v.drugID=85 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -5147,12 +5186,12 @@ v.drugID=61 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=61 and v.numDaysDesc>0;
+v.drugID=61 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -5203,22 +5242,22 @@ v.drugID=61 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=61 and v.dispAltNumDaysSpecify>0;
+v.drugID=61 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=61 and v.dispAltNumPills>0;
+v.drugID=61 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -5262,12 +5301,12 @@ v.drugID=62 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=62 and v.numDaysDesc>0;
+v.drugID=62 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -5318,22 +5357,22 @@ v.drugID=62 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=62 and v.dispAltNumDaysSpecify>0;
+v.drugID=62 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=62 and v.dispAltNumPills>0;
+v.drugID=62 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -5376,12 +5415,12 @@ v.drugID=63 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=63 and v.numDaysDesc>0;
+v.drugID=63 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -5432,22 +5471,22 @@ v.drugID=63 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=63 and v.dispAltNumDaysSpecify>0;
+v.drugID=63 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=63 and v.dispAltNumPills>0;
+v.drugID=63 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -5491,12 +5530,12 @@ v.drugID=13 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=13 and v.numDaysDesc>0;
+v.drugID=13 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -5547,22 +5586,22 @@ v.drugID=13 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=13 and v.dispAltNumDaysSpecify>0;
+v.drugID=13 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=13 and v.dispAltNumPills>0;
+v.drugID=13 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -5609,12 +5648,12 @@ v.drugID=18 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=18 and v.numDaysDesc>0;
+v.drugID=18 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -5665,22 +5704,22 @@ v.drugID=18 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=18 and v.dispAltNumDaysSpecify>0;
+v.drugID=18 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=18 and v.dispAltNumPills>0;
+v.drugID=18 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -5724,12 +5763,12 @@ v.drugID=24 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=24 and v.numDaysDesc>0;
+v.drugID=24 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -5780,22 +5819,22 @@ v.drugID=24 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=24 and v.dispAltNumDaysSpecify>0;
+v.drugID=24 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=24 and v.dispAltNumPills>0;
+v.drugID=24 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -5839,12 +5878,12 @@ v.drugID=25 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=25 and v.numDaysDesc>0;
+v.drugID=25 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -5895,22 +5934,22 @@ v.drugID=25 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=25 and v.dispAltNumDaysSpecify>0;
+v.drugID=25 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=25 and v.dispAltNumPills>0;
+v.drugID=25 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -5956,12 +5995,12 @@ v.drugID=30 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=30 and v.numDaysDesc>0;
+v.drugID=30 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -6012,22 +6051,22 @@ v.drugID=30 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=30 and v.dispAltNumDaysSpecify>0;
+v.drugID=30 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=30 and v.dispAltNumPills>0;
+v.drugID=30 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -6073,12 +6112,12 @@ v.drugID=48 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=48 and v.numDaysDesc>0;
+v.drugID=48 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -6129,22 +6168,22 @@ v.drugID=48 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=48 and v.dispAltNumDaysSpecify>0;
+v.drugID=48 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=48 and v.dispAltNumPills>0;
+v.drugID=48 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -6190,12 +6229,12 @@ v.drugID=47 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=47 and v.numDaysDesc>0;
+v.drugID=47 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -6246,22 +6285,22 @@ v.drugID=47 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=47 and v.dispAltNumDaysSpecify>0;
+v.drugID=47 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=47 and v.dispAltNumPills>0;
+v.drugID=47 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -6306,12 +6345,12 @@ v.drugID=49 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=49 and v.numDaysDesc>0;
+v.drugID=49 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -6362,22 +6401,22 @@ v.drugID=49 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=49 and v.dispAltNumDaysSpecify>0;
+v.drugID=49 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=49 and v.dispAltNumPills>0;
+v.drugID=49 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -6424,12 +6463,12 @@ v.drugID=50 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=50 and v.numDaysDesc>0;
+v.drugID=50 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -6480,22 +6519,22 @@ v.drugID=50 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=50 and v.dispAltNumDaysSpecify>0;
+v.drugID=50 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=50 and v.dispAltNumPills>0;
+v.drugID=50 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -6539,12 +6578,12 @@ v.drugID=65 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=65 and v.numDaysDesc>0;
+v.drugID=65 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -6595,22 +6634,22 @@ v.drugID=65 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=65 and v.dispAltNumDaysSpecify>0;
+v.drugID=65 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=65 and v.dispAltNumPills>0;
+v.drugID=65 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -6654,12 +6693,12 @@ v.drugID=51 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=51 and v.numDaysDesc>0;
+v.drugID=51 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -6710,22 +6749,22 @@ v.drugID=51 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=51 and v.dispAltNumDaysSpecify>0;
+v.drugID=51 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=51 and v.dispAltNumPills>0;
+v.drugID=51 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -6770,12 +6809,12 @@ v.drugID=52 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=52 and v.numDaysDesc>0;
+v.drugID=52 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -6826,22 +6865,22 @@ v.drugID=52 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=52 and v.dispAltNumDaysSpecify>0;
+v.drugID=52 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=52 and v.dispAltNumPills>0;
+v.drugID=52 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -6885,12 +6924,12 @@ v.drugID=2 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=2 and v.numDaysDesc>0;
+v.drugID=2 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -6941,22 +6980,22 @@ v.drugID=2 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=2 and v.dispAltNumDaysSpecify>0;
+v.drugID=2 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=2 and v.dispAltNumPills>0;
+v.drugID=2 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -6999,12 +7038,12 @@ v.drugID=53 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=53 and v.numDaysDesc>0;
+v.drugID=53 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -7055,22 +7094,22 @@ v.drugID=53 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=53 and v.dispAltNumDaysSpecify>0;
+v.drugID=53 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=53 and v.dispAltNumPills>0;
+v.drugID=53 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -7114,12 +7153,12 @@ v.drugID=54 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=54 and v.numDaysDesc>0;
+v.drugID=54 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -7170,22 +7209,22 @@ v.drugID=54 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=54 and v.dispAltNumDaysSpecify>0;
+v.drugID=54 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=54 and v.dispAltNumPills>0;
+v.drugID=54 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -7231,12 +7270,12 @@ v.drugID=78 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=78 and v.numDaysDesc>0;
+v.drugID=78 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -7287,22 +7326,22 @@ v.drugID=78 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=78 and v.dispAltNumDaysSpecify>0;
+v.drugID=78 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=78 and v.dispAltNumPills>0;
+v.drugID=78 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -7345,12 +7384,12 @@ v.drugID=77 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=77 and v.numDaysDesc>0;
+v.drugID=77 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -7401,22 +7440,22 @@ v.drugID=77 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=77 and v.dispAltNumDaysSpecify>0;
+v.drugID=77 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=77 and v.dispAltNumPills>0;
+v.drugID=77 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -7459,12 +7498,12 @@ v.drugID=76 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=76 and v.numDaysDesc>0;
+v.drugID=76 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -7515,22 +7554,22 @@ v.drugID=76 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=76 and v.dispAltNumDaysSpecify>0;
+v.drugID=76 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=76 and v.dispAltNumPills>0;
+v.drugID=76 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -7602,12 +7641,12 @@ v.drugID=22 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=22 and v.numDaysDesc>0;
+v.drugID=22 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -7658,22 +7697,22 @@ v.drugID=22 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=22 and v.dispAltNumDaysSpecify>0;
+v.drugID=22 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=22 and v.dispAltNumPills>0;
+v.drugID=22 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -7743,12 +7782,12 @@ v.drugID=27 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=27 and v.numDaysDesc>0;
+v.drugID=27 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -7799,22 +7838,22 @@ v.drugID=27 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=27 and v.dispAltNumDaysSpecify>0;
+v.drugID=27 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=27 and v.dispAltNumPills>0;
+v.drugID=27 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -7884,12 +7923,12 @@ v.drugID=26 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=26 and v.numDaysDesc>0;
+v.drugID=26 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -7940,22 +7979,22 @@ v.drugID=26 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=26 and v.dispAltNumDaysSpecify>0;
+v.drugID=26 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=26 and v.dispAltNumPills>0;
+v.drugID=26 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -8003,12 +8042,12 @@ v.drugID=72 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=72 and v.numDaysDesc>0;
+v.drugID=72 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -8059,22 +8098,22 @@ v.drugID=72 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=72 and v.dispAltNumDaysSpecify>0;
+v.drugID=72 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=72 and v.dispAltNumPills>0;
+v.drugID=72 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -8116,12 +8155,12 @@ v.drugID=38 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=38 and v.numDaysDesc>0;
+v.drugID=38 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -8172,22 +8211,22 @@ v.drugID=38 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=38 and v.dispAltNumDaysSpecify>0;
+v.drugID=38 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=38 and v.dispAltNumPills>0;
+v.drugID=38 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -8232,12 +8271,12 @@ v.drugID=39 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=39 and v.numDaysDesc>0;
+v.drugID=39 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -8288,22 +8327,22 @@ v.drugID=39 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=39 and v.dispAltNumDaysSpecify>0;
+v.drugID=39 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=39 and v.dispAltNumPills>0;
+v.drugID=39 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -8350,12 +8389,12 @@ v.drugID=73 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=73 and v.numDaysDesc>0;
+v.drugID=73 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -8406,22 +8445,22 @@ v.drugID=73 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=73 and v.dispAltNumDaysSpecify>0;
+v.drugID=73 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=73 and v.dispAltNumPills>0;
+v.drugID=73 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
@@ -8468,12 +8507,12 @@ v.drugID=75 and v.altDosageSpecify<>'';
 /* Durée de prise des médicaments */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.numDaysDesc>0 then v.numDaysDesc else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.numDaysDesc)>0 then FindNumericValue(v.numDaysDesc) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=75 and v.numDaysDesc>0;
+v.drugID=75 and FindNumericValue(v.numDaysDesc)>0;
 /* end migration group 1*/
 
   /* migration group 2*/
@@ -8524,25 +8563,26 @@ v.drugID=75 and v.dispAltDosageSpecify<>'';
  /* Nombre de jours alternatifs  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159368,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumDaysSpecify>0 then v.dispAltNumDaysSpecify else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumDaysSpecify)>0 then FindNumericValue(v.dispAltNumDaysSpecify) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=75 and v.dispAltNumDaysSpecify>0;
+v.drugID=75 and FindNumericValue(v.dispAltNumDaysSpecify)>0;
 
 /* Nombre de pillules distribuée*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1443,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispAltNumPills>0 then v.dispAltNumPills else null end,1,e.date_created,UUID()
+case when FindNumericValue(v.dispAltNumPills)>0 then FindNumericValue(v.dispAltNumPills) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.drugID=75 and v.dispAltNumPills>0;
+v.drugID=75 and FindNumericValue(v.dispAltNumPills)>0;
 
 /* End of migration group 2*/
 
 
 END;
+
 

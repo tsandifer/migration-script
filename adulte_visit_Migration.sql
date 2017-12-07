@@ -9,7 +9,7 @@ BEGIN
   DECLARE vvisit_type_id INT;
   DECLARE obs_datetime_,vobs_datetime,vdate_created,vencounter_datetime datetime;
   DECLARE vobs_id,vperson_id,vconcept_id,vencounter_id,vlocation_id INT;
-  DECLARE vreferHosp,vreferVctCenter,vreferPmtctProg,vreferOutpatStd,vreferCommunityBasedProg,vfirstCareOtherFacText varchar(10);
+  DECLARE vreferHosp,vreferVctCenter,vreferPmtctProg,vreferOutpatStd,vreferCommunityBasedProg,vfirstCareOtherFacText varchar(30);
  
 
 DECLARE source_reference CURSOR  for 
@@ -22,6 +22,7 @@ c.sitecode = v.sitecode and e.encounter_datetime = concat(v.visitDateYy,'-',v.vi
   
 DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE; 
 
+SET FOREIGN_KEY_CHECKS=0;
 
 /* SIGNES VITAUX MENU */
 /*DATA Migration for vitals Temp*/
@@ -525,7 +526,7 @@ AND v.riskID=34 AND (v.riskAnswer=1 or v.riskAnswer=2);
  
  	/*STARTING MIGRATION FOR COMPTE CD4 MENU*/
 		/*Compte CD4 le plus bas*/		
-INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159375,e.encounter_id,e.encounter_datetime,e.location_id,
 	CASE WHEN v.lowestCd4Cnt<>'' THEN lowestCd4Cnt
 		ELSE NULL
@@ -536,7 +537,7 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 v.lowestCd4Cnt<>'';	
 
 		/* DATE */		
-INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159376,e.encounter_id,e.encounter_datetime,e.location_id,
 CASE WHEN v.lowestCd4CntDd<1 AND v.lowestCd4CntMm<1 AND v.lowestCd4CntYy>0 
 		THEN date(CONCAT(v.lowestCd4CntYy,'-',01,'-',01))
@@ -564,7 +565,7 @@ v.lowestCd4CntNotDone=1;
 
 		/*MIGRATION for Virémie*/
 		
-		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163280,e.encounter_id,e.encounter_datetime,e.location_id,
 	CASE WHEN v.firstViralLoad<>'' THEN lowestCd4Cnt
 		ELSE NULL
@@ -575,7 +576,7 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 v.firstViralLoad<>'';	
 
 		/* DATE */		
-INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163281,e.encounter_id,e.encounter_datetime,e.location_id,
 CASE WHEN v.firstViralLoadDd<1 AND v.firstViralLoadMm<1 AND v.firstViralLoadYy>0 
 		THEN date(CONCAT(v.firstViralLoadYy,'-',01,'-',01))
@@ -593,7 +594,7 @@ v.firstViralLoadYy>0;
 		
 	/*END OF MIGRATION FOR COMPTE CD4 MENU*/
  
- 
+  select 11 as testColumn;
  
  	/*MIGRATION FOR STATUT TB MENU*/
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
@@ -609,7 +610,7 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 (v.asymptomaticTb=1 OR v.completeTreat=1 OR v.currentTreat=1);
 	
 		/*Migration for Date complété */		
-INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159431,e.encounter_id,e.encounter_datetime,e.location_id,
 CASE WHEN v.completeTreatDd<1 AND v.completeTreatMm<1 AND v.completeTreatYy>0 THEN date(CONCAT(v.completeTreatYy,'-',01,'-',01))
 	 WHEN v.completeTreatDd<1 AND v.completeTreatMm>0 AND v.completeTreatYy>0 THEN date(CONCAT(v.completeTreatYy,'-',v.completeTreatMm,'-',01))
@@ -624,7 +625,7 @@ v.completeTreat=1 AND v.completeTreatYy>0;
 	/*END OF MIGRATION FOR STATUT TB MENU */
 	
 	
-	
+	 select 12 as testColumn;
 	
 	
 	/*MIGRATION FOR VACCINS MENU*/
@@ -671,7 +672,7 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 v.vaccHepB=1 AND v.vaccHepBYy>0;
 
 /*migration for Nombre de dose */
-INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
 CASE WHEN v.vaccHepB=1 AND v.hepBdoses>=0 THEN v.hepBdoses ELSE NULL END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals  v ,itech.obs_concept_group og
