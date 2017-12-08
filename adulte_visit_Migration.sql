@@ -3607,17 +3607,6 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.medElig=1	AND (v.protocoleTestTraitement=1);					
 	/*END OF ÉLIGIBILITÉ MÉDICALE AUX ARV MENU*/
-	/*MIGRATION FOR Date de prochaine visite */
-INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,5096,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN c.nxtVisitDd<1 AND c.nxtVisitMm<1 AND c.nxtVisitYy>0 THEN CONCAT(c.nxtVisitYy,'-',01,'-',01)
-	 WHEN c.nxtVisitDd<1 AND c.nxtVisitMm>0 AND c.nxtVisitYy>0 THEN CONCAT(c.nxtVisitYy,'-',c.nxtVisitMm,'-',01)
-	 WHEN c.nxtVisitDd>0 AND c.nxtVisitMm>0 AND c.nxtVisitYy>0 THEN CONCAT(c.nxtVisitYy,'-',c.nxtVisitMm,'-',c.nxtVisitDd)
-	 ELSE NULL
-END,1,e.date_created,UUID()
-FROM itech.encounter c, encounter e
-WHERE e.uuid = c.encGuid  and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(c.visitDateYy,'-',c.visitDateMm,'-',c.visitDateDd)
-AND c.nxtVisitYy>0;
 
 	/*END OF MIGRATION FOR Date de prochaine visite*/
 	/*MIGRATION FOR ÉVALUATION ET PLAN MENU*/

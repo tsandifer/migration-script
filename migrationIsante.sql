@@ -19,4 +19,10 @@ BEGIN
    call discontinuationMigration();
 /* travail et accouchemnet*/
    call travailAccMigration();
-END;
+/* Adherence */
+   call  adherenceMigration();
+END$$
+
+
+DELIMITER $$ ;
+call migrationIsante();
