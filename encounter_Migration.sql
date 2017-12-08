@@ -26,10 +26,12 @@ select visit_type_id into vvisit_type_id from visit_type where uuid='7b0f5697-27
  
 
   /* remove old obs, visit and encounter data */
-update obs set obs_group_id=null where encounter_id in (select encounter_id from encounter where encounter_type<>32);
-delete from obs where encounter_id in (select encounter_id from encounter where encounter_type<>32);
+update obs set obs_group_id=null where encounter_id in (select encounter_id from encounter where encounter_type not in (select e.encounter_type_id from encounter_type e where uuid='873f968a-73a8-4f9c-ac78-9f4778b751b6'));
+delete from obs where encounter_id in (select encounter_id from encounter where encounter_type not in (select e.encounter_type_id from encounter_type e where uuid='873f968a-73a8-4f9c-ac78-9f4778b751b6'));
 delete from isanteplus_form_history;
-delete from encounter where encounter_type<>32; 
+delete from encounter where encounter_type not in (select e.encounter_type_id from encounter_type e where uuid='873f968a-73a8-4f9c-ac78-9f4778b751b6');
+
+
 delete from visit;
 
 /* Visit Migration */
@@ -37,7 +39,7 @@ INSERT INTO visit (patient_id, visit_type_id, date_started, date_stopped, locati
 SELECT DISTINCT p.person_id, vvisit_type_id, concat(e.visitDateYy,'-',e.visitDateMm,'-',e.visitDateDd), concat(e.visitDateYy,'-',e.visitDateMm,'-',e.visitDateDd), l.location_id,1, e.lastModified, UUID()
 FROM person p, itech.patient it, itech.encounter e,itech.location_mapping l
 WHERE p.uuid = it.patGuid AND it.patientid = e.patientid AND l.siteCode=e.siteCode AND
-e.encounterType in (1,2,3,4,5,6,12,14,16,17,18,19,20,21,24,25,26,27,28,29,31);
+e.encounterType in (1,2,3,4,5,6,12,14,16,17,18,19,20,21,24,25,26,27,28,29,31,32);
 
 select 1 as visit;
 
@@ -82,7 +84,8 @@ INSERT INTO itech.typeToForm (encounterType, uuid) VALUES
 ( 29 , '88692569-a213-43c3-b1f3-d8745c456543' ),
 ( 28 , '3c7f88b0-b844-47ba-b4da-4b5dee2b8b0a' ),
 ( 2  , 'df621bc1-6f2e-46bf-9fe9-184f1fdd41f2' ),
-( 17 , 'f55d3760-1bf1-4e42-a7f9-0a901fa49cf0' );
+( 17 , 'f55d3760-1bf1-4e42-a7f9-0a901fa49cf0' ),
+( 32 , '42ad13ab-db20-4aed-b8d5-fa4ca15317ee' );
  
 UPDATE itech.typeToForm i, form t SET i.form_id = t.form_id,i.encounterTypeOpenmrs=t.encounter_type where i.uuid = t.uuid; 
  
@@ -102,7 +105,7 @@ WHERE p.uuid = j.patGuid and
 e.patientID = j.patientID AND 
 v.patient_id = p.person_id AND 
 v.date_started = date(concat(e.visitDateYy,'-',e.visitDateMm,'-',e.visitDateDd)) AND 
-e.encounterType in (1,2,3,4,5,6,12,14,16,17,18,19,20,21,24,25,26,27,28,29,31) AND
+e.encounterType in (1,2,3,4,5,6,12,14,16,17,18,19,20,21,24,25,26,27,28,29,31,32) AND
 e.encounterType = f.encounterType 
 ON DUPLICATE KEY UPDATE
 encounter_type=VALUES(encounter_type),
@@ -118,7 +121,7 @@ select 3 as encounter1;
 
 /*migration for form history */
 insert into isanteplus_form_history(visit_id,encounter_id,creator,date_created,uuid)
-select visit_id,encounter_id,creator,date_created, uuid() from encounter e where encounter_type<>32 and form_id not in (1,2,3,4,5)
+select visit_id,encounter_id,creator,date_created, uuid() from encounter e where encounter_type not in (select e.encounter_type_id from encounter_type e where uuid='873f968a-73a8-4f9c-ac78-9f4778b751b6') and form_id not in (1,2,3,4,5)
 ON DUPLICATE KEY UPDATE
 visit_id=values(visit_id),
 encounter_id=values(encounter_id),

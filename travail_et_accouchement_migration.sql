@@ -2779,4 +2779,3 @@ BEGIN
 	
 END$$
 	DELIMITER ;
-	call travailAccMigration();
