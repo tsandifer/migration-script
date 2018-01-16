@@ -8583,6 +8583,17 @@ v.drugID=75 and FindNumericValue(v.dispAltNumPills)>0;
 /* End of migration group 2*/
 
 
+/* Date de renouvellement de la prescription*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162549,e.encounter_id,e.encounter_datetime,e.location_id,
+    CASE WHEN c.nxtVisitYy>0 and c.nxtVisitMm>0 and c.nxtVisitDd>0 THEN date(concat(c.nxtVisitYy,'-',c.nxtVisitMm,'-',c.nxtVisitDd))
+	     WHEN c.nxtVisitYy>0 and c.nxtVisitMm>0 and c.nxtVisitDd<1 THEN date(concat(c.nxtVisitYy,'-',c.nxtVisitMm,'-01'))
+	     WHEN c.nxtVisitYy>0 and c.nxtVisitMm<1 and c.nxtVisitDd<1 THEN date(concat(c.nxtVisitYy,'-01-01'))
+		ELSE NULL
+	END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e
+WHERE e.uuid = c.encGuid and c.encounterType in (5,18);
+
 END;
 
 

@@ -39,8 +39,8 @@ select 4 as vital1;
 /*DATA Migration for vitals TA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,5085,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.vitalBPUnits=1 THEN substring_index(replace(v.vitalBp1+0,',','.'),'.',2)
-WHEN v.vitalBPUnits=2 THEN substring_index(replace(v.vitalBp1+0,',','.'),'.',2)*10 END,1,e.date_created,UUID()
+CASE WHEN v.vitalBPUnits=1 THEN substring_index(replace(v.vitalBp1+0,',','.'),'.',2)*10
+WHEN v.vitalBPUnits=2 THEN substring_index(replace(v.vitalBp1+0,',','.'),'.',2) END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
@@ -48,8 +48,8 @@ substring_index(replace(v.vitalBp1,',','.'),'.',2) REGEXP '^[0-9\.]+$' and v.vit
 
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,5086,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.vitalBPUnits=1 THEN substring_index(replace(v.vitalBp2,',','.'),'.',2)
-WHEN v.vitalBPUnits=2 THEN substring_index(replace(v.vitalBp2,',','.'),'.',2)*10 END,1,e.date_created,UUID()
+CASE WHEN v.vitalBPUnits=1 THEN substring_index(replace(v.vitalBp2,',','.'),'.',2)*10
+WHEN v.vitalBPUnits=2 THEN substring_index(replace(v.vitalBp2,',','.'),'.',2) END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
@@ -77,8 +77,9 @@ AND v.vitalRr<>'';
 /*DATA Migration for vitals TAILLE*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,5090,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.vitalHeightCm<>'' THEN v.vitalHeightCm
-WHEN v.vitalHeight<>''  THEN vitalHeight*100
+CASE WHEN v.vitalHeightCm<>'' and v.vitalHeight<>'' THEN v.vitalHeightCm+vitalHeight*100
+WHEN v.vitalHeight<>'' and v.vitalHeightCm='' THEN vitalHeight*100
+WHEN v.vitalHeightCm<>'' and v.vitalHeight='' THEN v.vitalHeightCm
 ELSE NULL
 END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
@@ -162,7 +163,9 @@ select 7 as source1;
 	   /*Migration for Date du premier test (anticorps) VIH positif*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,160082,e.encounter_id,e.encounter_datetime,e.location_id,
-	CASE WHEN v.firstTestYy<>'' AND v.firstTestMm<>'' THEN CONCAT(v.firstTestYy,'-',v.firstTestMm,'-',01)
+CASE WHEN v.firstTestYy>0 and v.firstTestMm>0 and v.firstTestDd>0 THEN date(concat(v.firstTestYy,'-',v.firstTestMm,'-',v.firstTestDd))
+	 WHEN v.firstTestYy>0 and v.firstTestMm>0 and v.firstTestDd<1 THEN date(concat(v.firstTestYy,'-',v.firstTestMm,'-01'))
+	 WHEN v.firstTestYy>0 and v.firstTestMm<1 and v.firstTestDd<1 THEN date(concat(v.firstTestYy,'-01-01'))
 		ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
@@ -734,8 +737,7 @@ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.conce
 FROM openmrs.obs
 WHERE openmrs.obs.concept_id=1727 
 GROUP BY openmrs.obs.person_id,encounter_id;
-
-set vobs_id=last_insert_id();	
+	
 		/*migration for the concept*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1728,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
