@@ -973,31 +973,6 @@ BEGIN
 		AND concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd) =
 		concat(ac.visitDateYy,"-",ac.visitDateMm,"-",ac.visitDateDd)
 		AND(ac.sideOtherText<>"" AND ac.sideOtherText is not null);
-		/*=====================================================================*/
-		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
-		creator,date_created,uuid)
-		SELECT DISTINCT c.patient_id,162760,c.encounter_id,
-		CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-		WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-			DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-		WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-			DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-		ELSE
-			DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-		END,c.location_id,cg.obs_id,
-		CASE WHEN ac.sideNumb=1 THEN 1498
-		WHEN ac.sideNumb=2 THEN 1499
-		WHEN ac.sideNumb=4 THEN 1500
-		END,1,e.createDate, UUID()
-		from encounter c, itech.encounter e, itech.adherenceCounseling ac, itech.obs_concept_group cg
-		WHERE c.uuid = e.encGuid 
-		AND e.siteCode = ac.siteCode
-		AND e.patientID = ac.patientID
-		AND c.encounter_id=cg.encounter_id
-		AND c.patient_id=cg.person_id
-		AND concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd) =
-		concat(ac.visitDateYy,"-",ac.visitDateMm,"-",ac.visitDateDd)
-		AND (ac.sideOtherText<>"" AND ac.sideOtherText is not null);
 		/*End migration for Autres, préciser :*/
 		
 		
@@ -1025,3 +1000,4 @@ BEGIN
 		/*End migration for Raison donnée pour avoir manqué une dose, cocher le ou les cas ci-dessous*/
 END$$
 	DELIMITER ;
+	call adherenceMigration();

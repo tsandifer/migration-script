@@ -12,7 +12,8 @@ DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
 create table if not exists itech.obs_concept_group (obs_id int,person_id int,concept_id int,encounter_id int);
 
-create table if not exists itech.location_mapping 
+create table if not exists itech.location_mapping(siteCode text, location_id int(11)); 
+INSERT INTO itech.location_mapping(siteCode,location_id)
 select distinct value_reference as siteCode,location_id  from location_attribute l, location_attribute_type sl
 where sl.name='iSanteSiteCode' and sl.location_attribute_type_id=l.attribute_type_id;
  
@@ -129,6 +130,4 @@ creator=values(creator),
 date_created=values(date_created);
 
 /*end of migration pour visit form history */
-
-
 end;
