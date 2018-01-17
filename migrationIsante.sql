@@ -42,7 +42,7 @@ SELECT DISTINCT e.patient_id,163340,e.encounter_id,e.encounter_datetime,e.locati
 		ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e
-WHERE e.uuid = c.encGuid ;
+WHERE e.uuid = c.encGuid and encStatus in (1,3,5,7);
 
 /* La fiche doit être passée en revue par la personne responsable de la qualité des données. */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
@@ -51,7 +51,7 @@ SELECT DISTINCT e.patient_id,163341,e.encounter_id,e.encounter_datetime,e.locati
 		ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e
-WHERE e.uuid = c.encGuid ;
+WHERE e.uuid = c.encGuid and encStatus in (3,7);
 
    
 END$$
