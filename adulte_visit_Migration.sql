@@ -514,15 +514,112 @@ AND v.riskID=34 AND (v.riskAnswer=1 or v.riskAnswer=2);
 
 	/*END OF MIGRATION FOR AUTRES FACTEURS DE RISQUE MENU*/ 
  
+ /*RAPPORTS SEXUELS DANS LES TROIS (3) DERNIERS MOIS*/
+ 
+ 	/*Migration for obsgroup*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163279,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.riskAssessment v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) 
+AND (v.lastQuarterSex in (1,2) OR v.lastQuarterSexWithoutCondom in (1,2));
+		
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=163279 
+GROUP BY openmrs.obs.person_id,encounter_id;	
+ 
+ /* rapport sexuel */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160109,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+CASE WHEN v.lastQuarterSex=1  THEN 1065
+     WHEN v.lastQuarterSex=2 THEN 1066
+	 ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.riskAssessment v ,itech.obs_concept_group og
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) 
+AND v.lastQuarterSex in (1,2);		
+
+/* si oui */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1357,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+CASE WHEN v.lastQuarterSexWithoutCondom=1  THEN 1358
+     WHEN v.lastQuarterSexWithoutCondom=2 THEN 1090
+	 ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.riskAssessment v ,itech.obs_concept_group og
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) 
+AND v.lastQuarterSexWithoutCondom in (1,2);	
+ 
+ /* end group*/
  
  
+ /* Statut sérologique du conjoint(e) */
+ 	/*Migration for obsgroup*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163279,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.riskAssessment v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) 
+AND ( v.lastQuarterSeroStatPart in (1,2,4));
+		
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=163279 
+GROUP BY openmrs.obs.person_id,encounter_id;	
+ 
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1436,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+CASE WHEN v.lastQuarterSeroStatPart=1  THEN 703
+     WHEN v.lastQuarterSeroStatPart=2 THEN 664
+	 WHEN v.lastQuarterSeroStatPart=4 THEN 1067
+	 ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.riskAssessment v ,itech.obs_concept_group og
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) 
+AND v.lastQuarterSeroStatPart in (1,2,4);	
+
+
+/*ACTIVITE SEXUELS */
+/*Rapport sexuel */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160109,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.sexInt=1  THEN 1065
+     WHEN v.sexInt=2 THEN 1066
+	 ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) 
+AND v.sexInt in (1,2);	
+
+/*Rapports sexuels sans préservatif*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160581,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.sexIntWOcondom=1  THEN 159218
+	 ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) 
+AND v.sexIntWOcondom in (1,2);	
  
  select 10 as testColumn;
  
  
  
  
- 
+/* END OF RAPPORTS SEXUELS DANS LES TROIS (3) DERNIERS MOIS*/
  
  
  
@@ -538,6 +635,7 @@ FROM itech.encounter c, encounter e, itech.vitals v
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.lowestCd4Cnt<>'';	
+
 
 		/* DATE */		
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
@@ -557,13 +655,12 @@ v.lowestCd4Cnt<>'' AND v.lowestCd4CntYy>0;
 		/*Non effectué/Inconnu*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1941,e.encounter_id,e.encounter_datetime,e.location_id,
-	CASE WHEN v.lowestCd4Cnt<>'' AND v.lowestCd4CntNotDone=1 THEN 1066
+	CASE WHEN v.lowestCd4CntNotDone=1 THEN 1066
 		ELSE NULL
 		END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.lowestCd4Cnt<>'' AND 
 v.lowestCd4CntNotDone=1;
 
 		/*MIGRATION for Virémie*/
@@ -1461,8 +1558,19 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.arretINHYy>0;			
 
+		/* Migration for Aucun signe ou sympôtme indicatif de TB */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1659,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.noTBsymptoms=1 THEN 1660 ELSE NULL END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.tbStatus  v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.noTBsymptoms=1;		
+
+
+noTBsymptoms
 		
-	/*END OF MIGRATION FOR ÉVALUATION TB*/
+	/*END OF MIGRATION FOR ÉVALUATION TB aeyaitahlu*/
   
   /*MIGRATION FOR ANTÉCEDENTS MÉDICAUX ET DIAGNOSTICS ACTUELS*/
 	  /*Migration for Lymphadénopathie chronique persistante*/

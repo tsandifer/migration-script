@@ -1000,4 +1000,3 @@ BEGIN
 		/*End migration for Raison donnée pour avoir manqué une dose, cocher le ou les cas ci-dessous*/
 END$$
 	DELIMITER ;
-	call adherenceMigration();

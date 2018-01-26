@@ -8594,6 +8594,35 @@ SELECT DISTINCT e.patient_id,162549,e.encounter_id,e.encounter_datetime,e.locati
 FROM itech.encounter c, encounter e
 WHERE e.uuid = c.encGuid and c.encounterType in (5,18);
 
+
+ /* Date d'initiation ARV in ordonance form*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159599,e.encounter_id,e.encounter_datetime,e.location_id,
+    CASE WHEN pr.arvStartDateYy>0 and pr.arvStartDateMm>0 and pr.arvStartDateDd>0 THEN date(concat(pr.arvStartDateYy,'-',pr.arvStartDateMm,'-',pr.arvStartDateDd))
+	     WHEN pr.arvStartDateYy>0 and pr.arvStartDateMm>0 and pr.arvStartDateDd<1 THEN date(concat(pr.arvStartDateYy,'-',pr.arvStartDateMm,'-01'))
+	     WHEN pr.arvStartDateYy>0 and pr.arvStartDateMm<1 and pr.arvStartDateDd<1 THEN date(concat(pr.arvStartDateYy,'-01-01'))
+		ELSE NULL
+	END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e,itech.prescriptionOtherFields pr
+WHERE e.uuid = c.encGuid and c.encounterType in (5,18) and pr.patientID=c.patientID and pr.arvStartDateYy>0 and
+date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(pr.visitDateYy,'-',pr.visitDateMm,'-',pr.visitDateDd);
+
+/* Patient inscrit dans le programme ARV*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159811,e.encounter_id,e.encounter_datetime,e.location_id,
+    CASE WHEN pr.startedArv=1 then 1065
+	     when pr.startedArv=0 then 1066
+		 else null 
+    end,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e,itech.prescriptionOtherFields pr
+WHERE e.uuid = c.encGuid and c.encounterType in (5,18) and pr.patientID=c.patientID and pr.startedArv>=0 and
+date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(pr.visitDateYy,'-',pr.visitDateMm,'-',pr.visitDateDd);
+
+
+
+
+
+
 END;
 
 

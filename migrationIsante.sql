@@ -38,11 +38,11 @@ WHERE e.uuid = c.encGuid ;
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163340,e.encounter_id,e.encounter_datetime,e.location_id,
     CASE WHEN encStatus=5 or encStatus=7 THEN 163339
-	     WHEN encStatus=1 or encStatus=3 THEN 1267	 
+	     WHEN encStatus=1 or encStatus=3 or encStatus=0 THEN 1267	 
 		ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e
-WHERE e.uuid = c.encGuid and encStatus in (1,3,5,7);
+WHERE e.uuid = c.encGuid and encStatus in (0,1,3,5,7);
 
 /* La fiche doit être passée en revue par la personne responsable de la qualité des données. */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
@@ -52,6 +52,31 @@ SELECT DISTINCT e.patient_id,163341,e.encounter_id,e.encounter_datetime,e.locati
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e
 WHERE e.uuid = c.encGuid and encStatus in (3,7);
+
+/*Evaluation et plan */
+
+/*visit suivi */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159395,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.followupComments<>'' then v.followupComments
+ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.followupTreatment v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.followupComments<>'';
+
+/* premiere visit  */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159395,e.encounter_id,e.encounter_datetime,e.location_id,
+CASE WHEN v.assessmentPlan<>'' then v.assessmentPlan
+ELSE NULL
+END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e, itech.vitals v 
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.assessmentPlan<>'';
+
 
    
 END$$

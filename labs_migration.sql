@@ -14375,6 +14375,30 @@ create table if not exists itech.obs_concept_group (obs_id int,person_id int,con
 	/*End migration for Biologie Moleculaire Part*/
 	
 	
+	/* migration type of visit */
+	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
+ creator,date_created,uuid)
+ SELECT DISTINCT c.patient_id,164181,c.encounter_id,
+ CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
+ WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
+  DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
+ WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
+  DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
+ ELSE
+  DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
+ END,c.location_id,
+ CASE WHEN ito.value_numeric=1 THEN 160542
+ WHEN ito.value_numeric=2 THEN 164180
+ WHEN ito.value_numeric=3 THEN 160530
+ WHEN ito.value_numeric=4 THEN 1597
+ END,1,e.createDate, UUID()
+ from encounter c, itech.encounter e, itech.obs ito
+ WHERE c.uuid = e.encGuid  and e.siteCode = ito.location_id 
+ and e.encounter_id = ito.encounter_id
+ AND ito.concept_id=71443
+ AND ito.value_numeric IN(1,2,3,4);
+	
+	
 	/*Ending migration for labs data*/
 	
  END$$
