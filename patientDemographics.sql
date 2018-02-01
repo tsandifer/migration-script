@@ -8,29 +8,9 @@ BEGIN
   
   DECLARE obs_datetime_,date_created_ datetime;
   DECLARE uuid_ varchar(50);
-  DECLARE contact_,phoneContact_,addrContact_,relationContact_,medicalPoa_,relationMedicalPoa_,addrMedicalPoa_,phoneMedicalPoa_ TEXT;
-  DECLARE disclosureName_,disclosureRel_,disclosureAddress_,disclosureTelephone_ TEXT;
-  DECLARE person_id_,encounter_id_,location_id_,creator_,disclosureSlot_ INT;
   DECLARE encounter_type_ INT;
-  DECLARE concept_relation,relationMedicalPoa_concept, disclosureRelation_concept,obs_id INT;
 
 
-  
-  DECLARE emergencyCursor CURSOR FOR select p.person_id,e.encounter_id,encounter_datetime as obs_datetime,1 as location_id,p.creator,e.date_created,uuid() as uuid,contact,phoneContact,addrContact,relationContact,
-medicalPoa,relationMedicalPoa,addrMedicalPoa,phoneMedicalPoa
-from person p, itech.patient j, encounter e
- where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
-and ((j.contact IS NOT NULL AND j.contact <> '') or 
-     (j.phoneContact IS NOT NULL AND j.phoneContact <> '') or
-     (j.addrContact IS NOT NULL AND j.addrContact <> '') or
-     (j.relationContact IS NOT NULL AND j.relationContact <> '')
- );
- 
- 
- DECLARE disclosureCursor CURSOR FOR   select p.person_id,e.encounter_id,encounter_datetime as obs_datetime,1 as location_id,
- p.creator,e.date_created,uuid() as uuid,disclosureName,disclosureRel,disclosureAddress,disclosureTelephone,disclosureSlot	 
-from person p, itech.patient j,itech.allowedDisclosures a, encounter e
- where j.patGuid = p.uuid and e.patient_id=p.person_id and a.patientID=j.patientID and e.visit_id is null;
  
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
@@ -38,7 +18,7 @@ from person p, itech.patient j,itech.allowedDisclosures a, encounter e
  * use lastModified field from encounter for create_date
  * make patGuid from patient table primary key for all additional migration statements
  */
- 
+ create table if not exists itech.obs_concept_group (obs_id int,person_id int,concept_id int,encounter_id int);
  SET SQL_SAFE_UPDATES = 0;
  /* remove obs and encounter data when script failled */
  update obs set obs_group_id=null where person_id in (select p.person_id from person p,itech.patient p1 where p1.patGuid=p.uuid);
@@ -85,7 +65,7 @@ select now() as person;
  
 -- CREATE UNIQUE INDEX nameIndex ON person_name (person_id, given_name, family_name); 
 INSERT INTO person_name(person_id, preferred, given_name,family_name,creator, date_created, uuid)
-SELECT distinct p.person_id, 1,left(replace(fname, ' ',''),50), left(replace(lname,' ',''),50), 1,p.date_created, uuid()
+SELECT distinct p.person_id, 1,left(fname,50), left(lname,50), 1,p.date_created, uuid()
 FROM person p, itech.patient j where p.uuid = j.patGuid ON DUPLICATE KEY UPDATE
 preferred      = VALUES(preferred),
 given_name     = VALUES(given_name),
@@ -125,21 +105,6 @@ creator = VALUES(creator),
 date_created = VALUES(date_created);
 
 select now() as patient;
-/* Load iSanté patient identifier types    
- */ 
-/*INSERT INTO patient_identifier_type (patient_identifier_type_id, name, description, creator, date_created) VALUES 
-(20,'Haiti NationalID','Haiti NationalID',1,now()),
-(21,'masterPID','masterPID',1,now()),
-(22,'obgynID','obgynID',1,now()),
-(23,'primCareID','primCareID',1,now()),
-(24,'clinicPatientID','clinicPatientID',1,now()),
-(25,'iSante PatientID','iSante PatientID',1,now());
-*/
-
-
-
-
-
 
 /* create unique index so that script can be rerun
  */
@@ -219,7 +184,7 @@ select now() as Encounter;
 
 /* insert marital status into obs */
 insert into obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
-select p.person_id,'1054' as concept_id,e.encounter_id,encounter_datetime as obs_datetime,e.location_id,
+select p.person_id,1054 as concept_id,e.encounter_id,encounter_datetime as obs_datetime,e.location_id,
 case WHEN j.maritalStatus=1 THEN 5555  -- marie
      WHEN j.maritalStatus=8 THEN 1056  -- separe
      WHEN j.maritalStatus=4 THEN 1059  -- veuve 
@@ -229,107 +194,309 @@ end as value_coded,
 from person p, itech.patient j, encounter e
  where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
   and j.maritalStatus IS NOT NULL AND j.maritalStatus <> '';
+  
+  /* insert Occupation into obs */
+insert into obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+select p.person_id,1542 as concept_id,e.encounter_id,encounter_datetime as obs_datetime,e.location_id,
+case WHEN upper(j.occupation) like 'CHAUF%' or upper(j.occupation) like 'CHOF%' THEN 159466  
+     else  1067
+end as value_coded,
+1,e.date_created,uuid() as uuid	 
+from person p, itech.patient j, encounter e
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+  and j.occupation IS NOT NULL AND j.occupation <> '';
+
+/* birthDistrict */
+	  /* migration group */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164969,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+and ((j.birthDistrict IS NOT NULL AND j.birthDistrict <> ''));
+ 
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=164969 
+GROUP BY openmrs.obs.person_id,encounter_id;
+
+select now() as birthDistrict;
+	
+/* migration of contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164958,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,j.birthDistrict ,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+ and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((j.birthDistrict IS NOT NULL AND j.birthDistrict <> '')
+ );	
 
  select now() as obs1;
-
-
-  OPEN emergencyCursor;
-  OPEN disclosureCursor;
-
-  emergency_loop: LOOP
-    FETCH emergencyCursor INTO person_id_,encounter_id_,obs_datetime_,location_id_,creator_,date_created_,uuid_,contact_,phoneContact_,addrContact_,relationContact_,medicalPoa_,relationMedicalPoa_,addrMedicalPoa_,phoneMedicalPoa_;
-    IF done THEN
-      LEAVE emergency_loop;
-    END IF;
+                
+/*Emergency contact */	
+	  /* migration group */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164968,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+and ((j.contact IS NOT NULL AND j.contact <> '') or 
+     (j.phoneContact IS NOT NULL AND j.phoneContact <> '') or
+     (j.addrContact IS NOT NULL AND j.addrContact <> '') or
+     (j.relationContact IS NOT NULL AND j.relationContact <> '')
+ );
+ 
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=164968 
+GROUP BY openmrs.obs.person_id,encounter_id;
 	
-/* insert emergency contact */	
-
-case relationContact_
-when (UPPER(relationContact_)='PERE' or UPPER(relationContact_)='PAPA')  then set concept_relation='971';
-when (UPPER(relationContact_)='MERE' or UPPER(relationContact_)='MANMAN' or UPPER(relationContact_)='MAMAN')  then set concept_relation='970';
-when (UPPER(relationContact_)='ONCLE' or UPPER(relationContact_)='TONTON' or UPPER(relationContact_)='UNCLE')  then set concept_relation='974';
-when (UPPER(relationContact_)='GRAND PERE' or UPPER(relationContact_)='GRAND PAPA' or UPPER(relationContact_)='GRAN PAPA')  then set concept_relation='973';
-when (UPPER(relationContact_)='TANTE' or UPPER(relationContact_)='MATANT' or UPPER(relationContact_)='MA TANTE')  then set concept_relation='975';
-when (UPPER(relationContact_)='AMI' or UPPER(relationContact_)='AMIS' or UPPER(relationContact_)='ZANMI')  then set concept_relation='5618';
-else set concept_relation='5622';
-end case;
-
-case relationMedicalPoa_
-when (UPPER(relationMedicalPoa_)='PERE' or UPPER(relationMedicalPoa_)='PAPA')  then set relationMedicalPoa_concept='971';
-when (UPPER(relationMedicalPoa_)='MERE' or UPPER(relationMedicalPoa_)='MANMAN' or UPPER(relationMedicalPoa_)='MAMAN')  then set relationMedicalPoa_concept='970';
-when (UPPER(relationMedicalPoa_)='ONCLE' or UPPER(relationMedicalPoa_)='TONTON' or UPPER(relationMedicalPoa_)='UNCLE')  then set relationMedicalPoa_concept='974';
-when (UPPER(relationMedicalPoa_)='GRAND PERE' or UPPER(relationMedicalPoa_)='GRAND PAPA' or UPPER(relationMedicalPoa_)='GRAN PAPA')  then set relationMedicalPoa_concept='973';
-when (UPPER(relationMedicalPoa_)='TANTE' or UPPER(relationMedicalPoa_)='MATANT' or UPPER(relationMedicalPoa_)='MA TANTE')  then set relationMedicalPoa_concept='975';
-when (UPPER(relationMedicalPoa_)='AMI' or UPPER(relationMedicalPoa_)='AMIS' or UPPER(relationMedicalPoa_)='ZANMI')  then set relationMedicalPoa_concept='5618';
-else set relationMedicalPoa_concept='5622';
-end case;
-
-
-insert into obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
-values (person_id_,'164352',encounter_id_,obs_datetime_,location_id_,creator_,date_created_,uuid_);
-set obs_id=last_insert_id();
+/* migration of contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164950,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,j.contact ,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+ and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((j.contact IS NOT NULL AND j.contact <> '')
+ );	
+ 
+ /* migration of Telephone contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164956,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,j.phoneContact ,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((j.phoneContact IS NOT NULL AND j.phoneContact <> '')
+ );	
 	
-insert into obs(person_id,concept_id,encounter_id,obs_group_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
-values (person_id_,'164950',encounter_id_,obs_id,obs_datetime_,location_id_,contact_,creator_,date_created_,uuid()), -- contact
-       (person_id_,'164956',encounter_id_,obs_id,obs_datetime_,location_id_,phoneContact_,creator_,date_created_,uuid()), -- phone contact
-       (person_id_,'164949',encounter_id_,obs_id,obs_datetime_,location_id_,addrContact_,creator_,date_created_,uuid()) ;  -- address contact  	   
+ /* migration of address contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164958,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,j.addrContact ,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((j.addrContact IS NOT NULL AND j.addrContact <> '')
+ );
+ 
+  /* migration of RelationShip contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164352,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+  case 
+        when (UPPER(j.relationContact)='PERE' or UPPER(j.relationContact)='PAPA')  then '971'
+        when (UPPER(j.relationContact)='MERE' or UPPER(j.relationContact)='MANMAN' or UPPER(j.relationContact)='MAMAN')  then '970'
+        when (UPPER(j.relationContact)='ONCLE' or UPPER(j.relationContact)='TONTON' or UPPER(j.relationContact)='UNCLE')  then '974'
+        when (UPPER(j.relationContact)='GRAND PERE' or UPPER(j.relationContact)='GRAND PAPA' or UPPER(j.relationContact)='GRAN PAPA')  then '973'
+        when (UPPER(j.relationContact)='TANTE' or UPPER(j.relationContact)='MATANT' or UPPER(j.relationContact)='MA TANTE')  then '975'
+        when (UPPER(j.relationContact)='AMI' or UPPER(j.relationContact)='AMIS' or UPPER(j.relationContact)='ZANMI')  then  '5618'
+        else '5622'
+   end  ,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((j.relationContact IS NOT NULL AND j.relationContact <> '')
+ );		
+ 
 
-insert into obs(person_id,concept_id,encounter_id,obs_group_id,obs_datetime,location_id,value_coded,comments,creator,date_created,uuid)
-values (person_id_,'164352',encounter_id_,obs_id,obs_datetime_,location_id_,concept_relation,relationContact_,creator_,date_created_,uuid()); -- relationship
-/* insert poa contact */	
-insert into obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
-values (person_id_,'164959',encounter_id_,obs_datetime_,location_id_,creator_,date_created_,uuid());
+ 
+/*Disclosure contact  */
+ 
+ 	  /* migration group */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164959,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+and ((j.medicalPoa IS NOT NULL AND j.medicalPoa <> '') or 
+     (j.phoneMedicalPoa IS NOT NULL AND j.phoneMedicalPoa <> '') or
+     (j.addrMedicalPoa IS NOT NULL AND j.addrMedicalPoa <> '') or
+     (j.relationMedicalPoa IS NOT NULL AND j.relationMedicalPoa <> '')
+ );
 
-set obs_id=last_insert_id();
-
-insert into obs(person_id,concept_id,encounter_id,obs_group_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
-values (person_id_,'164950',encounter_id_,obs_id,obs_datetime_,location_id_,medicalPoa_,creator_,date_created_,uuid()), -- contact
-       (person_id_,'164956',encounter_id_,obs_id,obs_datetime_,location_id_,phoneMedicalPoa_,creator_,date_created_,uuid()), -- phone contact
-       (person_id_,'164949',encounter_id_,obs_id,obs_datetime_,location_id_,addrMedicalPoa_,creator_,date_created_,uuid()) ;  -- address contact  
-	
-insert into obs(person_id,concept_id,encounter_id,obs_group_id,obs_datetime,location_id,value_coded,comments,creator,date_created,uuid)
-values (person_id_,'164352',encounter_id_,obs_id,obs_datetime_,location_id_,relationMedicalPoa_concept,relationMedicalPoa_,creator_,date_created_,uuid()); 	
-	
-  select now() as obs2,contact_; 
-  END LOOP;
   
-  CLOSE emergencyCursor;
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=164959 
+GROUP BY openmrs.obs.person_id,encounter_id;
+	
+/* migration of contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164950,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,j.medicalPoa ,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+ and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((j.medicalPoa IS NOT NULL AND j.medicalPoa <> '')
+ );	
+ 
+ /* migration of Telephone contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164956,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,j.phoneMedicalPoa ,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((j.phoneMedicalPoa IS NOT NULL AND j.phoneMedicalPoa <> '')
+ );	
+	
+ /* migration of address contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164958,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,j.addrMedicalPoa ,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((j.addrMedicalPoa IS NOT NULL AND j.addrMedicalPoa <> '')
+ );
+ 
+  /* migration of RelationShip contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164352,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+  case 
+        when (UPPER(j.relationMedicalPoa)='PERE' or UPPER(j.relationMedicalPoa)='PAPA')  then '971'
+        when (UPPER(j.relationMedicalPoa)='MERE' or UPPER(j.relationMedicalPoa)='MANMAN' or UPPER(j.relationMedicalPoa)='MAMAN')  then '970'
+        when (UPPER(j.relationMedicalPoa)='ONCLE' or UPPER(j.relationMedicalPoa)='TONTON' or UPPER(j.relationMedicalPoa)='UNCLE')  then '974'
+        when (UPPER(j.relationMedicalPoa)='GRAND PERE' or UPPER(j.relationMedicalPoa)='GRAND PAPA' or UPPER(j.relationMedicalPoa)='GRAN PAPA')  then '973'
+        when (UPPER(j.relationMedicalPoa)='TANTE' or UPPER(j.relationMedicalPoa)='MATANT' or UPPER(j.relationMedicalPoa)='MA TANTE')  then '975'
+        when (UPPER(j.relationMedicalPoa)='AMI' or UPPER(j.relationMedicalPoa)='AMIS' or UPPER(j.relationMedicalPoa)='ZANMI')  then  '5618'
+        else '5622'
+   end  ,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((j.relationMedicalPoa IS NOT NULL AND j.relationMedicalPoa <> '')
+ );		
+ 
+ 
+/*Medical Pao Contact  1 */
+ 
+ 	  /* migration group */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164965,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.allowedDisclosures a
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null and a.patientID=j.patientID and disclosureSlot=1
+and ((a.disclosureName IS NOT NULL AND a.disclosureName <> '') or 
+     (a.disclosureRel IS NOT NULL AND a.disclosureRel <> '') or
+     (a.disclosureAddress IS NOT NULL AND a.disclosureAddress <> '') or
+     (a.disclosureTelephone IS NOT NULL AND a.disclosureTelephone <> '')
+ );
+
+ 
   
-   
-  disclosure_loop: LOOP
-    FETCH disclosureCursor INTO person_id_,encounter_id_,obs_datetime_,location_id_,creator_,date_created_,uuid_,disclosureName_,disclosureRel_,disclosureAddress_,disclosureTelephone_,disclosureSlot_;
-    IF done THEN
-      LEAVE disclosure_loop;
-    END IF;
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=164965 
+GROUP BY openmrs.obs.person_id,encounter_id;
 	
-case disclosureRel_
-when (UPPER(disclosureRel_)='PERE' or UPPER(disclosureRel_)='PAPA')  then set disclosureRelation_concept='971';
-when (UPPER(disclosureRel_)='MERE' or UPPER(disclosureRel_)='MANMAN' or UPPER(disclosureRel_)='MAMAN')  then set disclosureRelation_concept='970';
-when (UPPER(disclosureRel_)='ONCLE' or UPPER(disclosureRel_)='TONTON' or UPPER(disclosureRel_)='UNCLE')  then set disclosureRelation_concept='974';
-when (UPPER(disclosureRel_)='GRAND PERE' or UPPER(disclosureRel_)='GRAND PAPA' or UPPER(disclosureRel_)='GRAN PAPA')  then set disclosureRelation_concept='973';
-when (UPPER(disclosureRel_)='TANTE' or UPPER(disclosureRel_)='MATANT' or UPPER(disclosureRel_)='MA TANTE')  then set disclosureRelation_concept='975';
-when (UPPER(disclosureRel_)='AMI' or UPPER(disclosureRel_)='AMIS' or UPPER(disclosureRel_)='ZANMI')  then set disclosureRelation_concept='5618';
-else set disclosureRelation_concept='5622';
-end case;	
+/* migration of contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164950,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,a.disclosureName,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.allowedDisclosures a,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null and a.patientID=j.patientID and disclosureSlot=1
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((a.disclosureName IS NOT NULL AND a.disclosureName <> ''));
+
+ 
+ /* migration of Telephone contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164956,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,a.disclosureTelephone,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.allowedDisclosures a,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null and a.patientID=j.patientID and disclosureSlot=1
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((a.disclosureTelephone IS NOT NULL AND a.disclosureTelephone <> ''));
+
+ /* migration of address contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164958,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,a.disclosureAddress,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.allowedDisclosures a,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null and a.patientID=j.patientID and disclosureSlot=1
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((a.disclosureAddress IS NOT NULL AND a.disclosureAddress <> ''));
+ 
+  /* migration of RelationShip contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164352,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+  case 
+        when (UPPER(a.disclosureRel)='PERE' or UPPER(a.disclosureRel)='PAPA')  then '971'
+        when (UPPER(a.disclosureRel)='MERE' or UPPER(a.disclosureRel)='MANMAN' or UPPER(a.disclosureRel)='MAMAN')  then '970'
+        when (UPPER(a.disclosureRel)='ONCLE' or UPPER(a.disclosureRel)='TONTON' or UPPER(a.disclosureRel)='UNCLE')  then '974'
+        when (UPPER(a.disclosureRel)='GRAND PERE' or UPPER(a.disclosureRel)='GRAND PAPA' or UPPER(a.disclosureRel)='GRAN PAPA')  then '973'
+        when (UPPER(a.disclosureRel)='TANTE' or UPPER(a.disclosureRel)='MATANT' or UPPER(a.disclosureRel)='MA TANTE')  then '975'
+        when (UPPER(a.disclosureRel)='AMI' or UPPER(a.disclosureRel)='AMIS' or UPPER(a.disclosureRel)='ZANMI')  then  '5618'
+        else '5622'
+   end  ,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.allowedDisclosures a,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null and a.patientID=j.patientID and disclosureSlot=1
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((a.disclosureRel IS NOT NULL AND a.disclosureRel <> ''));		
 	
-/* insert disclosure contact */	
-insert into obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
-values (person_id_,'164963',encounter_id_,obs_datetime_,location_id_,creator_,date_created_,uuid());
 
-set obs_id=last_insert_id();
-	
-insert into obs(person_id,concept_id,encounter_id,obs_group_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
-values (person_id_,'164950',encounter_id_,obs_id,obs_datetime_,location_id_,disclosureName_,creator_,date_created_,uuid()), -- contact
-       (person_id_,'164956',encounter_id_,obs_id,obs_datetime_,location_id_,disclosureTelephone_,creator_,date_created_,uuid()), -- phone contact
-       (person_id_,'164949',encounter_id_,obs_idobs_datetime_,location_id_,disclosureAddress_,creator_,date_created_,uuid()) ;  -- address contact  	   
 
-insert into obs(person_id,concept_id,encounter_id,obs_group_id,obs_datetime,location_id,value_coded,comments,creator,date_created,uuid)
-values (person_id_,'164352',encounter_id_,obs_id,obs_datetime_,location_id_,disclosureRelation_concept,disclosureRel_,creator_,date_created_,uuid()); -- relationship	   
-	   
-	   
-	   
-  END LOOP;
+/*Medical Pao Contact  2 */
+ 
+ 	  /* migration group */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164961,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.allowedDisclosures a
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null and a.patientID=j.patientID and disclosureSlot=2
+and ((a.disclosureName IS NOT NULL AND a.disclosureName <> '') or 
+     (a.disclosureRel IS NOT NULL AND a.disclosureRel <> '') or
+     (a.disclosureAddress IS NOT NULL AND a.disclosureAddress <> '') or
+     (a.disclosureTelephone IS NOT NULL AND a.disclosureTelephone <> '')
+ );
 
-  CLOSE disclosureCursor;
+ 
   
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=164961 
+GROUP BY openmrs.obs.person_id,encounter_id;
+	
+/* migration of contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164950,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,a.disclosureName,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.allowedDisclosures a,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null and a.patientID=j.patientID and disclosureSlot=2
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((a.disclosureName IS NOT NULL AND a.disclosureName <> ''));
+
+ 
+ /* migration of Telephone contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164956,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,a.disclosureTelephone,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.allowedDisclosures a,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null and a.patientID=j.patientID and disclosureSlot=2
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((a.disclosureTelephone IS NOT NULL AND a.disclosureTelephone <> ''));
+
+ /* migration of address contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164958,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,a.disclosureAddress,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.allowedDisclosures a,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null and a.patientID=j.patientID and disclosureSlot=2
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((a.disclosureAddress IS NOT NULL AND a.disclosureAddress <> ''));
+ 
+  /* migration of RelationShip contact*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT p.person_id,164352,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+  case 
+        when (UPPER(a.disclosureRel)='PERE' or UPPER(a.disclosureRel)='PAPA')  then '971'
+        when (UPPER(a.disclosureRel)='MERE' or UPPER(a.disclosureRel)='MANMAN' or UPPER(a.disclosureRel)='MAMAN')  then '970'
+        when (UPPER(a.disclosureRel)='ONCLE' or UPPER(a.disclosureRel)='TONTON' or UPPER(a.disclosureRel)='UNCLE')  then '974'
+        when (UPPER(a.disclosureRel)='GRAND PERE' or UPPER(a.disclosureRel)='GRAND PAPA' or UPPER(a.disclosureRel)='GRAN PAPA')  then '973'
+        when (UPPER(a.disclosureRel)='TANTE' or UPPER(a.disclosureRel)='MATANT' or UPPER(a.disclosureRel)='MA TANTE')  then '975'
+        when (UPPER(a.disclosureRel)='AMI' or UPPER(a.disclosureRel)='AMIS' or UPPER(a.disclosureRel)='ZANMI')  then  '5618'
+        else '5622'
+   end  ,1,e.date_created,UUID()
+from person p, itech.patient j, encounter e,itech.allowedDisclosures a,itech.obs_concept_group og
+ where j.patGuid = p.uuid and e.patient_id=p.person_id and e.visit_id is null and a.patientID=j.patientID and disclosureSlot=2
+  and og.person_id=e.patient_id and e.encounter_id=og.encounter_id 
+and ((a.disclosureRel IS NOT NULL AND a.disclosureRel <> ''));			
+ 
+ 
+ select now() endDemo;
 END;

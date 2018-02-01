@@ -1567,8 +1567,6 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.noTBsymptoms=1;		
 
-
-noTBsymptoms
 		
 	/*END OF MIGRATION FOR ÉVALUATION TB aeyaitahlu*/
   

@@ -77,6 +77,16 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.assessmentPlan<>'';
 
+ /* migration for From Autor*/  
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1473,e.encounter_id,e.encounter_datetime,e.location_id,
+    CASE WHEN ifnull(formAuthor,'')<>'' and  ifnull(formAuthor2,'')<>'' then concat(formAuthor,' / ',formAuthor2)
+	     WHEN ifnull(formAuthor,'')<>'' and  ifnull(formAuthor2,'')='' then formAuthor
+		 WHEN ifnull(formAuthor,'')='' and  ifnull(formAuthor2,'')<>'' then formAuthor2
+		ELSE NULL
+	END,1,e.date_created,UUID()
+FROM itech.encounter c, encounter e
+WHERE e.uuid = c.encGuid ;
 
    
 END$$
