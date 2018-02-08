@@ -10,13 +10,7 @@ BEGIN
   
 DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE; 
 
-create table if not exists itech.obs_concept_group (obs_id int,person_id int,concept_id int,encounter_id int);
-
-create table if not exists itech.location_mapping(siteCode text, location_id int(11)); 
-INSERT INTO itech.location_mapping(siteCode,location_id)
-select distinct value_reference as siteCode,location_id  from location_attribute l, location_attribute_type sl
-where sl.name='iSanteSiteCode' and sl.location_attribute_type_id=l.attribute_type_id;
- 
+create table if not exists itech.obs_concept_group (obs_id int,person_id int,concept_id int,encounter_id int); 
 
 select visit_type_id into vvisit_type_id from visit_type where uuid='7b0f5697-27e3-40c4-8bae-f4049abfb4ed';
 
@@ -39,7 +33,7 @@ delete from visit;
 INSERT INTO visit (patient_id, visit_type_id, date_started, date_stopped, location_id, creator, date_created, uuid)
 SELECT DISTINCT p.person_id, vvisit_type_id, concat(e.visitDateYy,'-',e.visitDateMm,'-',e.visitDateDd), concat(e.visitDateYy,'-',e.visitDateMm,'-',e.visitDateDd), l.location_id,1, e.lastModified, UUID()
 FROM person p, itech.patient it, itech.encounter e,itech.location_mapping l
-WHERE p.uuid = it.patGuid AND it.patientid = e.patientid AND l.siteCode=e.siteCode AND
+WHERE p.uuid = it.patGuid AND it.patientid = e.patientid AND l.siteCode=e.siteCode AND e.encStatus<255 AND
 e.encounterType in (1,2,3,4,5,6,12,14,16,17,18,19,20,21,24,25,26,27,28,29,31,32);
 
 select 1 as visit;
@@ -107,6 +101,7 @@ e.patientID = j.patientID AND
 v.patient_id = p.person_id AND 
 v.date_started = date(concat(e.visitDateYy,'-',e.visitDateMm,'-',e.visitDateDd)) AND 
 e.encounterType in (1,2,3,4,5,6,12,14,16,17,18,19,20,21,24,25,26,27,28,29,31,32) AND
+e.encStatus<255 AND
 e.encounterType = f.encounterType 
 ON DUPLICATE KEY UPDATE
 encounter_type=VALUES(encounter_type),

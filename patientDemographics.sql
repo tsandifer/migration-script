@@ -19,6 +19,12 @@ BEGIN
  * make patGuid from patient table primary key for all additional migration statements
  */
  create table if not exists itech.obs_concept_group (obs_id int,person_id int,concept_id int,encounter_id int);
+ 
+ create table if not exists itech.location_mapping(siteCode text, location_id int(11)); 
+INSERT INTO itech.location_mapping(siteCode,location_id)
+select distinct value_reference as siteCode,location_id  from location_attribute l, location_attribute_type sl
+where sl.name='iSanteSiteCode' and sl.location_attribute_type_id=l.attribute_type_id;
+ 
  SET SQL_SAFE_UPDATES = 0;
  /* remove obs and encounter data when script failled */
  update obs set obs_group_id=null where person_id in (select p.person_id from person p,itech.patient p1 where p1.patGuid=p.uuid);
@@ -126,9 +132,9 @@ select now() as patient;
 */
 INSERT INTO patient_identifier(patient_id,  identifier, identifier_type, preferred, location_id, creator, date_created, uuid)
 SELECT p.person_id, case when t.name = 'Code National' then left(j.nationalid,50)
-when t.name = 'Code ST' then left(j.clinicPatientID,50) end, t.patient_identifier_type_id, 1, 1, 1, p.date_created,UUID()
-FROM person p, itech.patient j, patient_identifier_type t 
-WHERE p.uuid = j.patGuid AND (t.name = 'Code ST' OR (t.name = 'Code National' and j.nationalid is not null and j.nationalid <> '') OR (t.name = 'Code ST' and j.clinicPatientID is not null and j.clinicPatientID <> '')) ON DUPLICATE KEY UPDATE
+when t.name = 'Code ST' then left(j.clinicPatientID,50) end, t.patient_identifier_type_id, 1, l.location_id, 1, p.date_created,UUID()
+FROM person p, itech.patient j, patient_identifier_type t , itech.location_mapping l
+WHERE p.uuid = j.patGuid AND  l.siteCode=j.location_id AND (t.name = 'Code ST' OR (t.name = 'Code National' and j.nationalid is not null and j.nationalid <> '') OR (t.name = 'Code ST' and j.clinicPatientID is not null and j.clinicPatientID <> '')) ON DUPLICATE KEY UPDATE
 identifier=VALUES(identifier),
 identifier_type=VALUES(identifier_type), 
 preferred=VALUES(preferred), 
@@ -170,9 +176,10 @@ insert encounter for registration patient
 
 insert into encounter(encounter_type,patient_id,location_id,encounter_datetime,creator,date_created,uuid)
 select e.encounter_type_id,
-person_id,1,p.date_created,1,p.date_created,uuid()
-from person p,patient p1, (select e.encounter_type_id from encounter_type e where uuid='873f968a-73a8-4f9c-ac78-9f4778b751b6'
-) e where p.person_id=p1.patient_id on duplicate key update 
+p.person_id,l.location_id,p.date_created,1,p.date_created,uuid()
+from person p,patient p1,itech.patient it,itech.location_mapping l,(select e.encounter_type_id from encounter_type e where uuid='873f968a-73a8-4f9c-ac78-9f4778b751b6'
+) e where p.person_id=p1.patient_id and it.patGuid= p.uuid and it.location_id=l.siteCode
+on duplicate key update 
 encounter_type=values(encounter_type),
 location_id=values(location_id),
 encounter_datetime=values(encounter_datetime),
