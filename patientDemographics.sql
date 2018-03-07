@@ -94,7 +94,7 @@ select now() as personName;
 -- CREATE UNIQUE INDEX addressIndex ON person_address (person_id, address1, city_village);
 INSERT INTO person_address(person_id,   preferred, address1, city_village, creator, date_created, uuid)
 SELECT distinct p.person_id, 1, addrDistrict, addrSection, 1, p.date_created, UUID()
-FROM person p, itech.patient j where p.uuid = j.patGuid ON DUPLICATE KEY UPDATE
+FROM person p, itech.patient j where p.uuid = j.patGuid  and j.patStatus<255 ON DUPLICATE KEY UPDATE
 preferred = VALUES(preferred), 
 address1 = VALUES(address1), 
 city_village = VALUES(city_village), 
@@ -106,7 +106,7 @@ select now() as personAddress;
  */
 INSERT INTO patient(patient_id,  creator, date_created)
 SELECT  distinct p.person_id, 1, p.date_created
-FROM person p, itech.patient j where p.uuid = j.patGuid ON DUPLICATE KEY UPDATE
+FROM person p, itech.patient j where p.uuid = j.patGuid and j.patStatus<255 ON DUPLICATE KEY UPDATE
 creator = VALUES(creator),
 date_created = VALUES(date_created);
 
@@ -134,7 +134,7 @@ INSERT INTO patient_identifier(patient_id,  identifier, identifier_type, preferr
 SELECT p.person_id, case when t.name = 'Code National' then left(j.nationalid,50)
 when t.name = 'Code ST' then left(j.clinicPatientID,50) end, t.patient_identifier_type_id, 1, l.location_id, 1, p.date_created,UUID()
 FROM person p, itech.patient j, patient_identifier_type t , itech.location_mapping l
-WHERE p.uuid = j.patGuid AND  l.siteCode=j.location_id AND (t.name = 'Code ST' OR (t.name = 'Code National' and j.nationalid is not null and j.nationalid <> '') OR (t.name = 'Code ST' and j.clinicPatientID is not null and j.clinicPatientID <> '')) ON DUPLICATE KEY UPDATE
+WHERE p.uuid = j.patGuid and j.patStatus<255 AND  l.siteCode=j.location_id AND (t.name = 'Code ST' OR (t.name = 'Code National' and j.nationalid is not null and j.nationalid <> '') OR (t.name = 'Code ST' and j.clinicPatientID is not null and j.clinicPatientID <> '')) ON DUPLICATE KEY UPDATE
 identifier=VALUES(identifier),
 identifier_type=VALUES(identifier_type), 
 preferred=VALUES(preferred), 
@@ -159,7 +159,7 @@ when t.uuid = '8d871d18-c2cc-11de-8d13-0010c6dffd0f' then left(j.fnameMother,50)
 when t.uuid= '14d4f066-15f5-102d-96e4-000c29c2a5d7' then left(j.telephone,50)
 end, t.person_attribute_type_id,1, p.date_created, UUID()
 FROM person p, itech.patient j, person_attribute_type t 
-WHERE j.patGuid = p.uuid AND (
+WHERE j.patGuid = p.uuid and j.patStatus<255 AND (
 (t.uuid = '8d871d18-c2cc-11de-8d13-0010c6dffd0f' AND j.fnameMother IS NOT NULL AND j.fnameMother <> '') OR 
 (t.uuid= '14d4f066-15f5-102d-96e4-000c29c2a5d7' AND j.telephone IS NOT NULL AND j.telephone <> '')
 ) ON DUPLICATE KEY UPDATE

@@ -163,7 +163,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=1;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -173,6 +175,7 @@ og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.drugID=1 and v.dispensed=1;
 
+		 
  /* Posologie alternative  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1444,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
@@ -306,7 +309,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=8;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -447,7 +452,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=10;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -588,7 +595,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=12;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -731,7 +740,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=20;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -874,7 +885,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=29;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -1022,7 +1035,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=31;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -1168,7 +1183,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=33;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -1310,7 +1327,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=34;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -1452,7 +1471,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=11;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -1595,7 +1616,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=23;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -1738,7 +1761,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=5;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -1881,7 +1906,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=6;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -2022,7 +2049,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=16;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -2166,7 +2195,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=21;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -2310,7 +2341,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=88;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -2453,7 +2486,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=87;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -2566,7 +2601,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=36;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -2680,7 +2717,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=37;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -2793,7 +2832,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=82;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -2908,7 +2949,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=80;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -3022,7 +3065,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=81;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -3138,7 +3183,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=55;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -3253,7 +3300,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=42;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -3369,7 +3418,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=56;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -3485,7 +3536,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=57;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -3602,7 +3655,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=9;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -3717,7 +3772,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=43;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -3833,7 +3890,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=44;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -3949,7 +4008,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=79;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -4064,7 +4125,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=84;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -4179,7 +4242,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=58;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -4294,7 +4359,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=14;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -4410,7 +4477,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=59;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -4527,7 +4596,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=19;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -4642,7 +4713,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=45;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -4760,7 +4833,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=46;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -4876,7 +4951,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=60;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -4989,7 +5066,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=64;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -5104,7 +5183,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=85;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -5219,7 +5300,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=61;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -5334,7 +5417,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=62;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -5448,7 +5533,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=63;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -5563,7 +5650,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=13;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -5681,7 +5770,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=18;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -5796,7 +5887,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=24;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -5911,7 +6004,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=25;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -6028,7 +6123,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=30;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -6145,7 +6242,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=48;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -6262,7 +6361,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=47;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -6378,7 +6479,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=49;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -6496,7 +6599,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=50;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -6611,7 +6716,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=65;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -6726,7 +6833,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=51;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -6842,7 +6951,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=52;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -6957,7 +7068,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=2;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -7071,7 +7184,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=53;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -7186,7 +7301,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=54;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -7303,7 +7420,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=78;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -7417,7 +7536,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=77;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -7531,7 +7652,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=76;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -7674,7 +7797,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=22;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -7815,7 +7940,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=27;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -7956,7 +8083,9 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=26;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,
+case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -8075,7 +8204,8 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=72;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -8188,7 +8318,8 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=38;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -8422,7 +8553,8 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=73;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()
@@ -8540,7 +8672,8 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  
 v.drugID=75;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+SELECT DISTINCT e.patient_id,1276,e.encounter_id,case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
+     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
 case when v.dispensed=1 then 1065
 	 else null
 end ,1,e.date_created,UUID()

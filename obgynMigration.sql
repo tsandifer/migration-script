@@ -1620,6 +1620,7 @@ o.concept_id=71093 and o.value_boolean>0;
 /* END OF VACCINS */
 
 
+/*MOTIFS DE CONSULTATION*/
 
 /* Agressions sexuelles <72H */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
@@ -1627,8 +1628,8 @@ SELECT DISTINCT e.patient_id,163737,e.encounter_id,e.encounter_datetime,e.locati
 case when o.concept_id=71131 and o.value_boolean>0 then 163733
 	 else null
 end,1,e.date_created,UUID()
- FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
-where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
 o.concept_id=71131 and o.value_boolean>0;
 
 /* Agressions sexuelles 72H - 120H*/
@@ -1637,8 +1638,8 @@ SELECT DISTINCT e.patient_id,163737,e.encounter_id,e.encounter_datetime,e.locati
 case when o.concept_id=71132 and o.value_boolean>0 then 163734
 	 else null
 end,1,e.date_created,UUID()
- FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
-where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
 o.concept_id=71132 and o.value_boolean>0;
 
 /* Agressions sexuelles 120H - 2sem */
@@ -1647,8 +1648,8 @@ SELECT DISTINCT e.patient_id,163737,e.encounter_id,e.encounter_datetime,e.locati
 case when o.concept_id=71133 and o.value_boolean>0 then 163735
 	 else null
 end,1,e.date_created,UUID()
- FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
-where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
 o.concept_id=71133 and o.value_boolean>0;
 
 /* Agressions sexuelles 2 sem et plus */
@@ -1657,27 +1658,2226 @@ SELECT DISTINCT e.patient_id,163737,e.encounter_id,e.encounter_datetime,e.locati
 case when o.concept_id=71134 and o.value_boolean>0 then 163736
 	 else null
 end,1,e.date_created,UUID()
- FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
-where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
 o.concept_id=71134 and o.value_boolean>0;
 
-/* */
-INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,comments,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,163737,e.encounter_id,e.encounter_datetime,e.location_id,
-case when o.concept_id=70587 and o.value_boolean>0 then 148989 else null end,
-case when o.concept_id=70622 and o.value_text<>'' then o.value_text else null end,1,e.date_created,UUID()
+/* Aménorrhée, précisez */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70587 and o.value_boolean>0 then 148989 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+((o.concept_id=70587 and o.value_boolean>0));
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=148989 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70622
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=148989;
+
+
+
+/* Fièvre < 2 semaines" */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70172 and o.value_boolean>0 then 163740 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70172 and o.value_boolean>0;
+
+/*Planification Familiale*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70623 and o.value_boolean>0 then 965 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and  
+o.concept_id=70623 and o.value_boolean>0;
+
+/*Asthénie*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70828 and o.value_boolean>0 then 135367 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70828 and o.value_boolean>0;
+
+/*Fièvre ≥ 2 semaines*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70173 and o.value_boolean>0 then 162260 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70173 and o.value_boolean>0;
+
+/*Pollakiurie */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70193 and o.value_boolean>0 then 137593 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70193 and o.value_boolean>0;
+
+/* Céphalée */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70601 and o.value_boolean>0 then 139084 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70601 and o.value_boolean>0;
+
+/* Frissons */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=71339 and o.value_boolean>0 then 871 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71339 and o.value_boolean>0;
+
+/* Poly ménorrhée */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70634 and o.value_boolean>0 then 162 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70634 and o.value_boolean>0;
+
+
+/* Changement dans la fréquence et/ou intensité des mouvements foetaux */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70624 and o.value_boolean>0 then 113377 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70624 and o.value_boolean>0;
+
+/* Hémoptysie */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70610 and o.value_boolean>0 then 138905 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=70610 and o.value_boolean>0;
+
+/* Prurit Vulvaire */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70194 and o.value_boolean>0 then 128310 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70194 and o.value_boolean>0;
+
+
+
+/* Convulsions */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70602 and o.value_boolean>0 then 206 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70602 and o.value_boolean>0;
+/* Hypoménorrhée */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70629 and o.value_boolean>0 then 138043 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70629 and o.value_boolean>0;
+/* PTME */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70591 and o.value_boolean>0 then 159937 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70591 and o.value_boolean>0;
+
+
+/* Courbatures */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=71146 and o.value_boolean>0 then 150167 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71146 and o.value_boolean>0;
+/* Hyperménorrhée */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70629 and o.value_boolean>0 then 134345 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70629 and o.value_boolean>0;
+/* Saignement Vaginal */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70635 and o.value_boolean>0 then 147232 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70635 and o.value_boolean>0;
+
+
+/* Diarrhée */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70625 and o.value_boolean>0 then 142412 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70625 and o.value_boolean>0;
+/* Inappétence */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70214 and o.value_boolean>0 then 6031 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70214 and o.value_boolean>0;
+/* Sueurs profuses face/doigts*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70592 and o.value_boolean>0 then 140941 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70592 and o.value_boolean>0;
+
+/* Douleurs Abdominales */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70603 and o.value_boolean>0 then 151 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70603 and o.value_boolean>0;
+/* Leucorrhée */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70630 and o.value_boolean>0 then 123396 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70630 and o.value_boolean>0;
+/* Toux < 2 semaines*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70206 and o.value_boolean>0 then 163739 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70206 and o.value_boolean>0;
+
+
+/* Douleurs Épigastriques en barre */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70603 and o.value_boolean>0 then 141128 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70603 and o.value_boolean>0;
+/* Masse Hypogastrique */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70630 and o.value_boolean>0 then 130641 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=70630 and o.value_boolean>0;
+/* Toux ≥ 2 semaines */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70206 and o.value_boolean>0 then 159799 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70206 and o.value_boolean>0;
+
+
+/* Douleurs Hypogastriques */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70589 and o.value_boolean>0 then 131034 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70589 and o.value_boolean>0;
+/*Ménorragie */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70636 and o.value_boolean>0 then 134345 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=70636 and o.value_boolean>0;
+/* Troubles Visuels */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70593 and o.value_boolean>0 then 118938 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70593 and o.value_boolean>0;
+
+
+
+/* Douleurs précordiales */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70204 and o.value_boolean>0 then 159361 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70204 and o.value_boolean>0;
+/* Métrorragie */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70631 and o.value_boolean>0 then 163738 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=70631 and o.value_boolean>0;
+/* Vomissement */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=7025 and o.value_boolean>0 then 122983 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7025 and o.value_boolean>0;
+
+
+
+/* Douleurs thoraciques */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=71435 and o.value_boolean>0 then 120749 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71435 and o.value_boolean>0;
+/* Œdème */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70168 and o.value_boolean>0 then 460 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=70168 and o.value_boolean>0;
+
+
+/* Dyspnée */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=7007 and o.value_boolean>0 then 122496 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7007 and o.value_boolean>0;
+/* Oligo ménorrhée */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70632 and o.value_boolean>0 then 114997 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=70632 and o.value_boolean>0;
+
+/* Dysurie */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70600 and o.value_boolean>0 then 118771 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70600 and o.value_boolean>0;
+/* Passage de liquide par le vagin */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70633 and o.value_boolean>0 then 148968 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=70633 and o.value_boolean>0;
+
+
+/* Ecoulement nasal */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=71147 and o.value_boolean>0 then 113224 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71147 and o.value_boolean>0;
+/* Perte de poids */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159614,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.concept_id=70174 and o.value_boolean>0 then 832 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and
+o.concept_id=70174 and o.value_boolean>0;
+
+/*EDN OF MOTIFS DE CONSULTATION*/
+
+/* EXAMEN PHYSIQUE */
+/* Général */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1119,e.encounter_id,e.encounter_datetime,e.location_id,
+case when  v.physicalGeneral=1 then 159438
+     when  v.physicalGeneral=2 then 163293
+     when  v.physicalGeneral=3 then 1118
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.vitals v
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.physicalGeneral in (1,2,3);
+
+/* Tete */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1122,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7086 and o.value_numeric in (1,2,3);
+
+/* Cou + Thyroïde */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163388,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7087 and o.value_numeric in (1,2,3);
+
+/* Poumons */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1119,e.encounter_id,e.encounter_datetime,e.location_id,
+case when  v.physicalLungs=1 then 1115
+     when  v.physicalLungs=2 then 1116
+     when  v.physicalLungs=3 then 1118
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.vitals v
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.physicalLungs in (1,2,3);
+
+	
+/* Coeur */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1124,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7088 and o.value_numeric in (1,2,3);
+
+/* Seins */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159780,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7089 and o.value_numeric in (1,2,3);
+
+
+/* Abdomen */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1125,e.encounter_id,e.encounter_datetime,e.location_id,
+case when  v.physicalAbdomen=1 then 1115
+     when  v.physicalAbdomen=2 then 1116
+     when  v.physicalAbdomen=3 then 1118
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.vitals v
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.physicalAbdomen in (1,2,3);
+
+/* Uterus */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163742,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7904 and o.value_numeric in (1,2,3);
+
+
+/*Organes génitaux Externes*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163743,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7091 and o.value_numeric in (1,2,3);
+
+/* Vagin */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163744,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7092 and o.value_numeric in (1,2,3);
+
+/* Col */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160704,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7093 and o.value_numeric in (1,2,3);
+
+/* Annexes */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163745,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7094 and o.value_numeric in (1,2,3);
+
+/* Toucher Rectal */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163746,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7095 and o.value_numeric in (1,2,3);
+
+
+/* Membres */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1127,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7096 and o.value_numeric in (1,2,3);
+
+/* Reflexes Ostéo-Tendineux */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160623,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1115 
+     when o.value_numeric=2 then 1116
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7097 and o.value_numeric in (1,2,3);
+
+
+/* Peau */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1120,e.encounter_id,e.encounter_datetime,e.location_id,
+case when  v.physicalSkin=1 then 1115
+     when  v.physicalSkin=2 then 1116
+     when  v.physicalSkin=3 then 1118
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.vitals v
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.physicalSkin in (1,2,3);
+
+/* Lymphadenopathy Cervicale */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,145802,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 163747 
+     when o.value_numeric=2 then 163748
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71233 and o.value_numeric in (1,2,3);
+
+/* Lymphadenopathy Supraclaviculaire */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159003,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 163747 
+     when o.value_numeric=2 then 163748
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71234 and o.value_numeric in (1,2,3);
+
+/* Lymphadenopathy Axillaire */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,148058,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 163747 
+     when o.value_numeric=2 then 163748
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71235 and o.value_numeric in (1,2,3);
+
+/* Lymphadenopathy Inguinale */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163950,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 163747 
+     when o.value_numeric=2 then 163748
+	 o.value_numeric=3 then 1118 
+	 else null end,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71236 and o.value_numeric in (1,2,3);
+
+
+/*Description des conclusions anormales*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1391,e.encounter_id,e.encounter_datetime,e.location_id,o.value_text,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70906 and o.value_text<>'';
+
+
+/* Rythme cardiaque fœtal */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1440,e.encounter_id,e.encounter_datetime,e.location_id,FindNumericValue(o.value_text),1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7806 and FindNumericValue(o.value_text)>0;
+
+/* Hauteur utérine */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1439,e.encounter_id,e.encounter_datetime,e.location_id,FindNumericValue(o.value_text),1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7804 and FindNumericValue(o.value_text)>0;
+
+/* OEDEM */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,460,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 1065  
+     when o.value_numeric=2 then 1066
+	 else null end ,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70825 and o.value_numeric in (1,2);
+
+
+/* Présentation  */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160090,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 160001  
+     when o.value_numeric=2 then 139814
+	 when o.value_numeric=4 then 112259
+	 else null end ,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7805 and o.value_numeric in (1,2,4);
+
+
+/* Position  */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163749,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 5141  
+     when o.value_numeric=2 then 5139
+	 else null end ,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70826 and o.value_numeric in (1,2);
+
+
+/* Position  */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163750,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 163748  
+     when o.value_numeric=2 then 163747
+	 else null end ,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o 
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=70827 and o.value_numeric in (1,2);
+
+/* end of EXAMEN PHYSIQUE*/
+
+
+/* IMPRESSIONS CLINIQUES/DIAGNOSTIQUES */	
+  /* Agression sexuelle [T74.21XA] */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70360,70361,70362) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,110247,1,e.date_created,UUID()
  FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
 where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
-((o.concept_id=70587 and o.value_boolean>0) or (o.concept_id=70622 and o.value_text<>''));
+o.concept_id in (70360,70361,70362) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70360,70361,70362) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70360,70361,70362) and o.value_boolean=1;
+/* End of aggresion sexuelle*/
 
 
 
+  /* Adénofibrome (ADF) du sein [N60.39] */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70058,70106,70107) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,147635,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70058,70106,70107) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70058,70106,70107) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70058,70106,70107) and o.value_boolean=1;
+/* End of Adénofibrome (ADF) du sein */
 
 
+  /* Anémie */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70234,70235,70236) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,121629,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70234,70235,70236) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70234,70235,70236) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70234,70235,70236) and o.value_boolean=1;
+/* Anémie */
+	
+	
+  /* Avortement */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70057,70104,70105) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+50,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70057,70104,70105,) nd o.value_boolean=1;
+	
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=50 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70088
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=50;	
+	
+	
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70057,70104,70105) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70057,70104,70105) and o.value_boolean=1;
+/* end of Avortement */	
+	
+	
+	
+  /* Cancer de l’endomètre [C54.1] */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70061,70108,70109) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,128983,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70061,70108,70109) and o.value_boolean=1;
+	
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70061,70108,70109) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70061,70108,70109) and o.value_boolean=1;
+/* end of Cancer de l’endomètre [C54.1] */		
+
+	
+  /* Cancer de l’ovaire [C56.9] */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70060,70110,70111) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,133318,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70060,70110,70111) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70060,70110,70111) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70060,70110,70111) and o.value_boolean=1;
+/* end of Cancer de l’ovaire [C56.9] */	
+
+
+ /* Cancer de sein [C50.919] */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70059,70112,70113) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,comments,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+133354,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70059,70112,70113) and o.value_boolean=1;
+
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=133354 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70098
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=133354;	
+
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70059,70112,70113) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70059,70112,70113) and o.value_boolean=1;
+/*end of Cancer de sein [C50.919]*/		
+
+/* Cardiopathie [I51.9] */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70240,70241,70242) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,comments,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+139071,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70240,70241,70242) and o.value_boolean=1;
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=139071 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=71351
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=139071;	
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70240,70241,70242) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70240,70241,70242) and o.value_boolean=1;
+/* end of Cardiopathie [I51.9] */
+
+
+/*Chorioamniotite [O41.129] */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (71253,71254,71255) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+145548,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (71253,71254,71255) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (71253,71254,71255) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (71253,71254,71255) and o.value_boolean=1;
+/* end of Chorioamniotite [O41.129]*/
+
+
+/*Diabète + grossesse [O99.810]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70086,70114,70115) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+1449,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70086,70114,70115) and o.value_boolean=1;
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=1449 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70092
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=1449;	
+
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70086,70114,70115) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70086,70114,70115) and o.value_boolean=1;
+/* end of Diabète + grossesse [O99.810]*/
+
+
+/*Dystrophie ovarienne [N83.8]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70062,70116,70117) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+115178,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70062,70116,70117) and o.value_boolean=1;
+
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=115178 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70089
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=115178;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70062,70116,70117) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70062,70116,70117) and o.value_boolean=1;
+/* end of Dystrophie ovarienne [N83.8]*/
+
+
+
+/*Eclampsie [O15.9]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70084,70118,70119) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,112335,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70084,70118,70119) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70084,70118,70119) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70084,70118,70119) and o.value_boolean=1;
+/*end of Eclampsie [O15.9]*/
+
+
+/*Endométriose [N80.9]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70064,70120,70121) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+118629,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70064,70120,70121) and o.value_boolean=1;
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=118629 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70091
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=118629;	
+ 
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70064,70120,70121) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70064,70120,70121) and o.value_boolean=1;
+/*end of Endométriose [N80.9]*/
+
+
+/*Fibrome utérin [D26.9]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70065,70122,70124) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,comments,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+123455,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70065,70122,70124) and o.value_boolean=1;
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=123455 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70093
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=123455;	
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70065,70122,70124) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70065,70122,70124) and o.value_boolean=1;
+/* end of Fibrome utérin [D26.9]*/
+
+
+/* Grossesse ectopique [O0.00] */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70066,70123,70125) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,comments,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+46,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70066,70123,70125) and o.value_boolean=1;
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=46 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70095
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=46;
 
 
 	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70066,70123,70125) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70066,70123,70125) and o.value_boolean=1;
+/* Grossesse ectopique [O0.00] */
+
+
+/*Grossesse intra utérine [Z33.1]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70067,70126,70128) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,132678,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70067,70126,70128) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70067,70126,70128) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70067,70126,70128) and o.value_boolean=1;
+/*Grossesse intra utérine [Z33.1]*/
+
+
+/* HTA + grossesse [O16.9] */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70087,71140,71141) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,47,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70087,71140,71141) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70087,71140,71141) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70087,71140,71141) and o.value_boolean=1;
+/* end of HTA + grossesse [O16.9] */
+
+/* Hémorragie troisième trimestre [O46.90] */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70069,70132,70133) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+163751,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70069,70132,70133) and o.value_boolean=1;
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=163751 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=71135
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=163751;
+
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70069,70132,70133) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70069,70132,70133) and o.value_boolean=1;
+/* end of Hémorragie troisième trimestre [O46.90]*/
+
+
+/*Hyperémèse gravidique [O21.0]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70068,70130,70131) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,490,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70068,70130,70131) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70068,70130,70131) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70068,70130,70131) and o.value_boolean=1;
+/*Hyperémèse gravidique [O21.0]*/
+
+
+/*Infection génito-urinaire (IGU) [N73.9]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70847,70848,70849) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,116988,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70847,70848,70849) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70847,70848,70849) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70847,70848,70849) and o.value_boolean=1;
+/* end of Infection génito-urinaire (IGU) [N73.9]*/
+
+
+/* IST */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70097,70136,70137) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+112992,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70097,70136,70137) and o.value_boolean=1;
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=112992 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70096
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=112992;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70097,70136,70137) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70097,70136,70137) and o.value_boolean=1;
+/* end of IST */
+
+
+/* Kyste de l’ovaire [N83.29] */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70077,70138,70139) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+119702,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70077,70138,70139) and o.value_boolean=1;
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=119702 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70102
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=119702;
+
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70077,70138,70139) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70077,70138,70139) and o.value_boolean=1;
+
+/* end of Kyste de l’ovaire [N83.29]*/
+
+
+/*Lésion cervicale [D26.0]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70079,70140,70141) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+157480,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70079,70140,70141) and o.value_boolean=1;
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=157480 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70101
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=157480;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70079,70140,70141) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70079,70140,70141) and o.value_boolean=1;
+/*end of Lésion cervicale [D26.0]*/
+
+
+/*Maladie inflammatoire pelvienne [N73.9]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70080,70142,70143) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+902,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70080,70142,70143) and o.value_boolean=1;
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=159614
+    AND openmrs.obs.value_coded=902 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=70100
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=159614
+ AND ip.value_coded=902;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70080,70142,70143) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70080,70142,70143) and o.value_boolean=1;
+/*end of Maladie inflammatoire pelvienne [N73.9]*/
+
+/*Malaria (paludisme) [B52.9]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (71148,71150,71152,70850,70851,70852) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+116128,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (71148,71150,71152,70850,70851,70852) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
+case when o.concept_id in (71148,71150,71152) then 159392
+     when o.concept_id in (70850,70851,70852) then 159393
+	 else null end ,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (71148,71150,71152,70850,70851,70852) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (71148,71150,71152,70850,70851,70852) and o.value_boolean=1;
+/* end of Malaria (paludisme) [B52.9]*/
+
+
+
+/* Menace d’accouchement prématurée [O42.00] */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70078,70144,70145) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,158489,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70078,70144,70145) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70078,70144,70145) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70078,70144,70145) and o.value_boolean=1;
+/*end of Menace d’accouchement prématurée [O42.00] */
+
+/* Mort fœtale [O36.4XX0] */
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (70146,70147,71136) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,140399,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70146,70147,71136) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70146,70147,71136) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (70146,70147,71136) and o.value_boolean=1;
+/* end of Mort fœtale [O36.4XX0] */
+
+
+/*Oligoamnios [O41.00X0]*/
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id in (71256,71257,71258) and o.value_boolean=1;
+
+delete from itech.obs_concept_group where 1;		
+INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
+SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
+FROM openmrs.obs
+WHERE openmrs.obs.concept_id=159947 
+GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ /* name of the concept */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,132425,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (71256,71257,71258) and o.value_boolean=1;
+	
+/* Confirmé,Suspecté */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (71256,71257,71258) and o.value_boolean=1;
+
+/* Primaire,Secondaire */	
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
+o.concept_id in (71256,71257,71258) and o.value_boolean=1;
+/* end of Oligoamnios [O41.00X0]*/
+
+/* remarque */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159395,e.encounter_id,e.encounter_datetime,e.location_id,o.value_text,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=7271 and o.value_text<>'';
+
+/*TURBERCULOSE */
+/*Nouveau diagnostic,Suivi*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,1659,e.encounter_id,e.encounter_datetime,e.location_id,
+case when o.value_numeric=1 then 160567
+     when o.value_numercic=2 then 1662
+	 else null
+end ,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71224 and o.value_numeric>0;
+
+/* date d'enregistrement TB */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,161552,e.encounter_id,e.encounter_datetime,e.location_id,o.value_datetime ,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71173 and o.value_datetime is not null;
+
+/*Etablissement */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,162724,e.encounter_id,e.encounter_datetime,e.location_id,v.currentTreatFac,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,tbStatus v
+WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
+c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')  = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
+v.currentTreatFac<>'';
+
+/* Type de Malade */
+/* Nouveau */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159871,e.encounter_id,e.encounter_datetime,e.location_id,160567,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71174 and o.value_boolean=1;
+/* Traitement après interruption*/
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159871,e.encounter_id,e.encounter_datetime,e.location_id,163057,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71175 and o.value_boolean=1;
+/* Echec */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159871,e.encounter_id,e.encounter_datetime,e.location_id,159874,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71176 and o.value_boolean=1;
+/* Rechute */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159871,e.encounter_id,e.encounter_datetime,e.location_id,160033,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71177 and o.value_boolean=1;
+/* Transfere */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159871,e.encounter_id,e.encounter_datetime,e.location_id,159872,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71178 and o.value_boolean=1;
+/* MDR TB */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,159871,e.encounter_id,e.encounter_datetime,e.location_id,159345,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71179 and o.value_boolean=1;
+
+/* Classification de la maladie */
+/* Pulmonaire */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160040,e.encounter_id,e.encounter_datetime,e.location_id,42,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71180 and o.value_boolean=1;
+/* Extra Pulmonaire */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160040,e.encounter_id,e.encounter_datetime,e.location_id,5042,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71181 and o.value_boolean=1;
+
+/* Méningite */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160040,e.encounter_id,e.encounter_datetime,e.location_id,111967,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71182 and o.value_boolean=1;
+
+/* Genitale */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160040,e.encounter_id,e.encounter_datetime,e.location_id,159167,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71183 and o.value_boolean=1;
+
+/* Pleurale */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160040,e.encounter_id,e.encounter_datetime,e.location_id,111946,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71184 and o.value_boolean=1;
+
+/* Miliaire */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160040,e.encounter_id,e.encounter_datetime,e.location_id,115753,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71185 and o.value_boolean=1;
+
+/* Ganglionnaire */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160040,e.encounter_id,e.encounter_datetime,e.location_id,111873,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71186 and o.value_boolean=1;
+
+/* Intestinale */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160040,e.encounter_id,e.encounter_datetime,e.location_id,161355,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71187 and o.value_boolean=1;
+
+/* Intestinale */
+ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,160040,e.encounter_id,e.encounter_datetime,e.location_id,5622,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71188 and o.value_boolean=1;
+
+TRUNCATE TABLE itech.precisez;
+ INSERT INTO itech.precisez(obs_id,person_id,concept_id,encounter_id,location_id, value_coded)
+ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,
+ openmrs.obs.concept_id,openmrs.obs.encounter_id, openmrs.obs.location_id, openmrs.obs.value_coded
+ FROM openmrs.obs
+ WHERE openmrs.obs.concept_id=160040
+    AND openmrs.obs.value_coded=5622 
+ GROUP BY openmrs.obs.person_id,encounter_id;
+ 
+ UPDATE openmrs.obs ob, itech.obs ito, encounter c, itech.encounter e, itech.precisez ip
+     SET ob.comments=ito.value_text
+ WHERE c.uuid = e.encGuid
+ AND e.siteCode = ito.location_id 
+ AND e.encounter_id = ito.encounter_id
+ AND ito.concept_id=71189
+ AND (ito.value_text <> '' AND ito.value_text is not null)
+ AND ip.person_id=ob.person_id
+ AND ip.concept_id=ob.concept_id
+ AND ip.encounter_id=ob.encounter_id
+ AND ip.location_id=ob.location_id
+ AND ip.value_coded=ob.value_coded
+ AND ip.concept_id=160040
+ AND ip.value_coded=5622;
+ 
+ 
+ /* Diagnostic basé sur */
+ /*Crachat*/
+  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163752,e.encounter_id,e.encounter_datetime,e.location_id,307,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71190 and o.value_boolean=1;
+  /*X-Ray*/
+  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163752,e.encounter_id,e.encounter_datetime,e.location_id,12,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71191 and o.value_boolean=1;
+  /*Impression Clinique*/
+  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
+SELECT DISTINCT e.patient_id,163752,e.encounter_id,e.encounter_datetime,e.location_id,1690,1,e.date_created,UUID()
+ FROM itech.encounter c, encounter e,itech.obs o
+where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
+o.concept_id=71192 and o.value_boolean=1;
+
+/* end of TURBERCULOSE */
+
+
+
+
 END;
+
 
 
 
