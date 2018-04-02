@@ -3,25 +3,50 @@ DELIMITER $$
 CREATE PROCEDURE migrationIsante()
 BEGIN
 
+SET SQL_SAFE_UPDATES = 0;
+/* Clean openmrs database before import */
+ call cleanOpenmrs();
+
 /* patient registration migration */
+SET SQL_SAFE_UPDATES = 0;
    call patientDemographics();
 /* visit and Encounter migration*/
+SET SQL_SAFE_UPDATES = 0;
    call encounter_Migration();
 /* fistVisit migration VIH form */
+SET SQL_SAFE_UPDATES = 0;
    call adult_visit_Migration();
+   SET SQL_SAFE_UPDATES = 0;
 /* pediatric visit HIV migration */
    call pediatric_visit_Migration();
+   SET SQL_SAFE_UPDATES = 0;
  /* Lab migration  */
    call labsMigration();
+   SET SQL_SAFE_UPDATES = 0;
 /* ordonance migration */ 
    call ordonanceMigration();
+   SET SQL_SAFE_UPDATES = 0;
 /* discontinutation */   
    call discontinuationMigration();
+   SET SQL_SAFE_UPDATES = 0;
 /* travail et accouchemnet*/
    call travailAccMigration();
+   SET SQL_SAFE_UPDATES = 0;
 /* Adherence */
    call  adherenceMigration();
+   SET SQL_SAFE_UPDATES = 0;
    
+/* OBGYN */   
+ call obgynMigration();
+ SET SQL_SAFE_UPDATES = 0;
+
+/* SOINS SANTE PRIMAIRE ADULTE */ 
+ call sspAdultMigration();
+SET SQL_SAFE_UPDATES = 0;
+/* SOINS SANTE PRIMAIRE ADULTE */  
+ call sspPediatricMigration();
+SET SQL_SAFE_UPDATES = 0;
+ 
  /* migration for next VisitDate*/  
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,5096,e.encounter_id,e.encounter_datetime,e.location_id,

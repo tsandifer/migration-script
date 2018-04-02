@@ -166,7 +166,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -312,7 +312,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -455,7 +455,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -598,7 +598,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -743,7 +743,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -888,7 +888,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -1038,7 +1038,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -1186,7 +1186,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -1330,7 +1330,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -1474,7 +1474,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -1619,7 +1619,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -1764,7 +1764,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -1909,7 +1909,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -2052,7 +2052,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -2198,7 +2198,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -2344,7 +2344,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -2489,7 +2489,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -2604,7 +2604,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -2720,7 +2720,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -2835,7 +2835,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -2952,7 +2952,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -3068,7 +3068,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -3186,7 +3186,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -3303,7 +3303,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -3421,7 +3421,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -3539,7 +3539,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -3658,7 +3658,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -3775,7 +3775,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -3893,7 +3893,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -4011,7 +4011,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -4128,7 +4128,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -4245,7 +4245,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -4362,7 +4362,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -4480,7 +4480,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -4599,7 +4599,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -4716,7 +4716,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -4836,7 +4836,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -4954,7 +4954,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -5069,7 +5069,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -5186,7 +5186,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -5303,7 +5303,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -5420,7 +5420,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -5536,7 +5536,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -5653,7 +5653,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -5773,7 +5773,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -5890,7 +5890,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -6007,7 +6007,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -6126,7 +6126,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -6245,7 +6245,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -6364,7 +6364,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -6482,7 +6482,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -6602,7 +6602,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -6719,7 +6719,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -6836,7 +6836,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -6954,7 +6954,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -7071,7 +7071,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -7187,7 +7187,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -7304,7 +7304,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -7423,7 +7423,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -7539,7 +7539,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -7655,7 +7655,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -7800,7 +7800,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -7943,7 +7943,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -8086,7 +8086,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_g
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
 case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -8206,7 +8206,7 @@ v.drugID=72;
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -8320,7 +8320,7 @@ v.drugID=38;
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -8436,7 +8436,7 @@ v.drugID=39;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -8555,7 +8555,7 @@ v.drugID=73;
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
@@ -8674,7 +8674,7 @@ v.drugID=75;
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
      else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1065
+case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
