@@ -13739,6 +13739,75 @@ create table if not exists itech.obs_concept_group (obs_id int,person_id int,con
  AND ito.value_numeric IN(1,2,3,4);
 	
 	
+	/*Start migration for charge virale qualitative*/
+  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
+ creator,date_created,uuid)
+ SELECT DISTINCT c.patient_id,1271,c.encounter_id,e.createDate,c.location_id,
+ 1305,1,e.createDate,
+ UUID()
+ from encounter c, itech.encounter e, itech.labs l
+ WHERE c.uuid = e.encGuid and 
+ e.patientID = l.patientID and e.siteCode = l.siteCode
+ and concat(e.visitdateYy,'-',e.visitDateMm,'-',e.visitDateDd) = 
+ concat(l.visitdateYy,'-',l.visitDateMm,'-',l.visitDateDd) 
+ and e.seqNum = l.seqNum
+ AND l.labID = 103
+ AND ((l.result like lower("D%") OR l.result like lower("I%"))
+  OR (l.result2 like lower("D%") AND l.result2 like lower("I%"))
+  OR (l.result3 like lower("D%") AND l.result3 like lower("I%"))
+  OR (l.result4 like lower("D%") AND l.result4 like lower("I%"))
+ );
+   /*Answer*/
+   INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,comments,
+ creator,date_created,uuid)
+ SELECT DISTINCT c.patient_id,1305,c.encounter_id,
+ CASE WHEN ((FindNumericValue(l.resultDateYy)<1 OR FindNumericValue(l.resultDateYy) is null)
+   AND (FindNumericValue(l.resultDateMm) < 1 OR FindNumericValue(l.resultDateMm) is null)
+   AND (FindNumericValue(l.resultDateDd) < 1) OR FindNumericValue(l.resultDateDd) is null) 
+   THEN e.createDate
+ WHEN((FindNumericValue(l.resultDateYy)>0 AND FindNumericValue(l.resultDateYy) is not null) 
+  AND (FindNumericValue(l.resultDateMm) < 1 OR FindNumericValue(l.resultDateMm) is null)
+  AND (FindNumericValue(l.resultDateDd) > 0 AND FindNumericValue(l.resultDateDd) is not null)) 
+  THEN DATE_FORMAT(concat(FindNumericValue(l.resultDateYy),"-",01,"-",FindNumericValue(l.resultDateDd)),"%Y-%m-%d")
+ WHEN((FindNumericValue(l.resultDateYy)>0 AND FindNumericValue(l.resultDateYy) is not null)
+     AND (FindNumericValue(l.resultDateMm) > 0 AND FindNumericValue(l.resultDateMm) is not null)
+  AND (FindNumericValue(l.resultDateDd) < 1) OR FindNumericValue(l.resultDateDd) is null) 
+ THEN DATE_FORMAT(concat(FindNumericValue(l.resultDateYy),"-",FindNumericValue(l.resultDateMm),"-",01),"%Y-%m-%d")
+ ELSE
+  DATE_FORMAT(concat(FindNumericValue(l.resultDateYy),"-",FindNumericValue(l.resultDateMm),"-",FindNumericValue(l.resultDateDd)),"%Y-%m-%d")
+ END,c.location_id,
+ CASE WHEN (
+    (l.result like lower("D%"))
+    OR (l.result2 like lower("D%"))
+    OR (l.result3 like lower("D%"))
+    OR (l.result4 like lower("D%"))
+     ) THEN 1301
+  WHEN (
+    (l.result like lower("I%"))
+    OR (l.result2 like lower("I%"))
+    OR (l.result3 like lower("I%"))
+    OR (l.result4 like lower("I%"))
+     ) THEN 1306
+  END,
+ l.resultRemarks,1,e.createDate, UUID()
+ from encounter c, itech.encounter e, itech.labs l
+ WHERE c.uuid = e.encGuid and 
+ e.patientID = l.patientID and e.siteCode = l.siteCode 
+ and concat(e.visitdateYy,'-',e.visitDateMm,'-',e.visitDateDd) = 
+ concat(l.visitdateYy,'-',l.visitDateMm,'-',l.visitDateDd) 
+ and e.seqNum = l.seqNum
+ AND l.labID=103
+ AND ((l.result like lower("D%") OR l.result like lower("I%"))
+  OR (l.result2 like lower("D%") AND l.result2 like lower("I%"))
+  OR (l.result3 like lower("D%") AND l.result3 like lower("I%"))
+  OR (l.result4 like lower("D%") AND l.result4 like lower("I%"))
+ );
+
+/*End migration for charge virale qualitative*/
+	
+	
+	
+	
 	/*Ending migration for labs data*/
 	
  END$$
