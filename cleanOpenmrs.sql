@@ -18,6 +18,7 @@ delete from visit;
 truncate table visit;
 
 
+
 delete from person_attribute where person_id in (select p.person_id from person p, itech.patient j where  j.patGuid = p.uuid);
 
 delete from patient_identifier where patient_id in (select p.person_id from person p, itech.patient j where  j.patGuid = p.uuid);
@@ -30,7 +31,12 @@ delete from person_name where person_id in (select p.person_id from person p, it
 delete from person where uuid in (select patGuid from itech.patient);
 
 select max(person_id) into myInc from person;
-ALTER TABLE person AUTO_INCREMENT = myInc+1;
+set myInc=1; 
+SET @s = CONCAT("alter table person auto_increment=",myInc+1); 
+PREPARE stmt FROM @s; 
+EXECUTE stmt; 
+DEALLOCATE PREPARE stmt;
+
 
  END$$
 	DELIMITER ;

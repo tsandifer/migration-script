@@ -6,25 +6,32 @@ BEGIN
 SET SQL_SAFE_UPDATES = 0;
 /* Clean openmrs database before import */
  call cleanOpenmrs();
-
+select 1  as CleanOpenmrs;
 /* patient registration migration */
 SET SQL_SAFE_UPDATES = 0;
    call patientDemographics();
+   select 2 as Demographic;
 /* visit and Encounter migration*/
 SET SQL_SAFE_UPDATES = 0;
    call encounter_Migration();
+   select 3 as Encounter;
 /* fistVisit migration VIH form */
 SET SQL_SAFE_UPDATES = 0;
    call adult_visit_Migration();
+   select 4 as Adult;
    SET SQL_SAFE_UPDATES = 0;
 /* pediatric visit HIV migration */
    call pediatric_visit_Migration();
+   
+   select 5 as Pediatric;
    SET SQL_SAFE_UPDATES = 0;
  /* Lab migration  */
    call labsMigration();
+   select 6 as Lab;
    SET SQL_SAFE_UPDATES = 0;
 /* ordonance migration */ 
    call ordonanceMigration();
+   select 7 as Ordonance;
    SET SQL_SAFE_UPDATES = 0;
 /* discontinutation */   
    call discontinuationMigration();
