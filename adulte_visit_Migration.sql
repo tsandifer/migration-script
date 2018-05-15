@@ -1,4 +1,3 @@
-
 drop procedure if exists adult_visit_migration;
 DELIMITER $$ 
 
@@ -163,11 +162,7 @@ select 7 as source1;
 	   /*Migration for Date du premier test (anticorps) VIH positif*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,160082,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.firstTestYy>0 and v.firstTestMm>0 and FindNumericValue(v.firstTestDd)>0 THEN date(concat(v.firstTestYy,'-',v.firstTestMm,'-',v.firstTestDd))
-	 WHEN v.firstTestYy>0 and v.firstTestMm>0 and FindNumericValue(v.firstTestDd)<1 THEN date(concat(v.firstTestYy,'-',v.firstTestMm,'-01'))
-	 WHEN v.firstTestYy>0 and v.firstTestMm<1 and FindNumericValue(v.firstTestDd)<1 THEN date(concat(v.firstTestYy,'-01-01'))
-		ELSE NULL
-	END,1,e.date_created,UUID()
+formatDate(v.firstTestYy,v.firstTestMm,v.firstTestDd),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
@@ -279,11 +274,7 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 		/*Migration for Date du dernier Pap Test*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163267,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN FindNumericValue(v.papTestDd)<1 AND (FindNumericValue(v.papTestMm)<1 or FindNumericValue(v.papTestMm)>12) AND FindNumericValue(v.papTestYy)>0 THEN CONCAT(case when length(v.papTestYy)=2 then concat(20,v.papTestYy) else v.papTestYy end,'-',01,'-',01)
-	 WHEN FindNumericValue(v.papTestDd)<1 AND (FindNumericValue(v.papTestMm)>0 and FindNumericValue(v.papTestMm)<12) AND FindNumericValue(v.papTestYy)>0 THEN CONCAT(case when length(v.papTestYy)=2 then concat(20,v.papTestYy) else v.papTestYy end,'-',v.papTestMm,'-',01)
-	 WHEN FindNumericValue(v.papTestDd)>0 AND (FindNumericValue(v.papTestMm)>0 and FindNumericValue(v.papTestMm)<12) AND FindNumericValue(v.papTestYy)>0 THEN CONCAT(case when length(v.papTestYy)=2 then concat(20,v.papTestYy) else v.papTestYy end,'-',v.papTestMm,'-',v.papTestDd)  
-	 ELSE NULL
-END,1,e.date_created,UUID()
+formatDate(v.papTestYy,v.papTestMm,v.papTestDd),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
@@ -292,11 +283,7 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 		/* Migration for Date des dernières règles*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1427,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN FindNumericValue(v.pregnantLmpDd)<1 AND (FindNumericValue(v.pregnantLmpMm)<1 or FindNumericValue(v.pregnantLmpMm)>12) AND FindNumericValue(v.pregnantLmpYy)>0 THEN CONCAT(case when length(v.pregnantLmpYy)=2 then concat(20,v.pregnantLmpYy) else v.pregnantLmpYy end,'-',01,'-',01)
-	 WHEN FindNumericValue(v.pregnantLmpDd)<1 AND (FindNumericValue(v.pregnantLmpMm)>0 and FindNumericValue(v.pregnantLmpMm)<12) AND FindNumericValue(v.pregnantLmpYy)>0 THEN CONCAT(case when length(v.pregnantLmpYy)=2 then concat(20,v.pregnantLmpYy) else v.pregnantLmpYy end,'-',v.pregnantLmpMm,'-',01)
-	 WHEN FindNumericValue(v.pregnantLmpDd)>0 AND (FindNumericValue(v.pregnantLmpMm)>0 and FindNumericValue(v.pregnantLmpMm)<12) AND FindNumericValue(v.pregnantLmpYy)>0 THEN CONCAT(case when length(v.pregnantLmpYy)=2 then concat(20,v.pregnantLmpYy) else v.pregnantLmpYy end,'-',v.pregnantLmpMm,'-',v.pregnantLmpDd)  
-	 ELSE NULL
-END,1,e.date_created,UUID()
+formatDate(v.pregnantLmpYy,v.pregnantLmpMm,v.pregnantLmpDd),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
@@ -334,18 +321,17 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.riskID in (1,3,5,6,9,14,15,19,31) and v.riskAnswer=1;
 
+
+select 3 as sid;
 		/*FOR THE DATE*//*Bénéficier de sang/dérivé sanguin*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163268,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN FindNumericValue(v.riskDd)<1 AND FindNumericValue(v.riskMm)<1 AND FindNumericValue(v.riskYy)>0 THEN CONCAT(v.riskYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.riskDd)<1 AND FindNumericValue(v.riskMm)>0 AND FindNumericValue(v.riskYy)>0 THEN CONCAT(v.riskYy,'-',v.riskMm,'-',01)
-	 WHEN FindNumericValue(v.riskDd)>0 AND FindNumericValue(v.riskMm)>0 AND FindNumericValue(v.riskYy)>0 THEN CONCAT(v.riskYy,'-',v.riskMm,'-',v.riskDd)  
-	 ELSE NULL
-END,1,e.date_created,UUID()
+formatDate(v.riskYy,v.riskMm,v.riskDd),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.riskAssessments v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.riskID=15 and v.riskAnswer=1 and FindNumericValue(v.riskYy,0)>0;
+v.riskID=15 and v.riskAnswer=1 and FindNumericValue(v.riskYy)>0;
+
 select 9 as riskAnswer; 		
 /*MIGRATION FOR Accident d'exposition au sang*/
 	/*Migration for obsgroup*/
@@ -380,14 +366,12 @@ v.riskID=12 and v.riskAnswer=1;
 		
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,162601,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN v.riskID=12 AND v.riskAnswer=1 and FindNumericValue(v.riskYy)>1 then date(concat(riskYy,'-',ifnull(v.riskMm,'01'),'-',ifnull(v.riskDd,'01')))
-	 else null
-END,1,e.date_created,UUID()
+formatDate(v.riskYy,v.riskMm,v.riskDd),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.riskAssessments v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.riskID=12 and v.riskAnswer=1 and FindNumericValue(v.riskYy,0)>0;		
+v.riskID=12 and v.riskAnswer=1 and FindNumericValue(v.riskYy)>0;		
 	
 	/*END OF MIGRATION FOR MODE PROBABLE DE TRANSMISSION DU VIH MENU*/
  select 9 as riskAnswer1; 
@@ -632,26 +616,25 @@ AND v.sexIntWOcondom in (1,2);
 		/*Compte CD4 le plus bas*/		
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159375,e.encounter_id,e.encounter_datetime,e.location_id,
-	FindNumericValue(CASE WHEN v.lowestCd4Cnt<>'' THEN lowestCd4Cnt
+	CASE WHEN FindNumericValue(v.lowestCd4Cnt)>0 THEN FindNumericValue(lowestCd4Cnt)
 		ELSE NULL
-	END),1,e.date_created,UUID()
+	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.lowestCd4Cnt<>'';	
-
+FindNumericValue(v.lowestCd4Cnt)>0;	
+ select 10 as testColumn1;
 
 		/* DATE */		
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159376,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN FindNumericValue(v.lowestCd4CntDd)<1 AND FindNumericValue(v.lowestCd4CntMm)<1 AND FindNumericValue(v.lowestCd4CntYy)>0 THEN date(CONCAT(v.lowestCd4CntYy,'-',01,'-',01))
-	 WHEN FindNumericValue(v.lowestCd4CntDd)<1 AND FindNumericValue(v.lowestCd4CntMm)>0 AND FindNumericValue(v.lowestCd4CntYy)>0 THEN date(CONCAT(v.lowestCd4CntYy,'-',v.lowestCd4CntMm,'-',01))
-	 WHEN FindNumericValue(v.lowestCd4CntDd)>0 AND FindNumericValue(v.lowestCd4CntMm)>0 AND FindNumericValue(v.lowestCd4CntYy)>0 THEN date(CONCAT(v.lowestCd4CntYy,'-',v.lowestCd4CntMm,'-',v.lowestCd4CntDd))
-	ELSE NULL END,1,e.date_created,UUID()
+formatDate(v.lowestCd4CntYy,v.lowestCd4CntMm,v.lowestCd4CntDd),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.lowestCd4Cnt<>'' AND v.lowestCd4CntYy>0;
+v.lowestCd4Cnt<>'' AND FindNumericValue(v.lowestCd4CntYy)>0;
+
+ select 10 as testColumn2;
 		/*Non effectué/Inconnu*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1941,e.encounter_id,e.encounter_datetime,e.location_id,
@@ -662,26 +645,23 @@ FROM itech.encounter c, encounter e, itech.vitals v
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.lowestCd4CntNotDone=1;
-
+ select 10 as testColumn3;
 		/*MIGRATION for Virémie*/
-		
+	
 		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163280,e.encounter_id,e.encounter_datetime,e.location_id,
-	FindNumericValue(CASE WHEN v.firstViralLoad<>'' THEN lowestCd4Cnt
+	CASE WHEN FindNumericValue(v.firstViralLoad)>0 THEN FindNumericValue(lowestCd4Cnt)
 		ELSE NULL
-	END),1,e.date_created,UUID()
+	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.firstViralLoad<>'';	
-
+FindNumericValue(v.firstViralLoad)>0;	
+ select 10 as testColumn4;
 		/* DATE */		
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163281,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN FindNumericValue(v.firstViralLoadDd)<1 AND FindNumericValue(v.firstViralLoadMm)<1 AND FindNumericValue(v.firstViralLoadYy)>0 THEN date(CONCAT(v.firstViralLoadYy,'-',01,'-',01))
-	 WHEN FindNumericValue(v.firstViralLoadDd)<1 AND FindNumericValue(v.firstViralLoadMm)>0 AND FindNumericValue(v.firstViralLoadYy)>0 THEN date(CONCAT(v.firstViralLoadYy,'-',v.firstViralLoadMm,'-',01))
-	 WHEN FindNumericValue(v.firstViralLoadDd)>0 AND FindNumericValue(v.firstViralLoadMm)>0 AND FindNumericValue(v.firstViralLoadYy)>0 THEN date(CONCAT(v.firstViralLoadYy,'-',v.firstViralLoadMm,'-',v.firstViralLoadDd))
-	ELSE NULL END,1,e.date_created,UUID()
+formatDate(v.firstViralLoadYy,v.firstViralLoadMm,v.firstViralLoadDd),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
@@ -707,11 +687,7 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 		/*Migration for Date complété */		
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159431,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN FindNumericValue(v.completeTreatDd)<1 AND FindNumericValue(v.completeTreatMm)<1 AND FindNumericValue(v.completeTreatYy)>0 THEN date(CONCAT(v.completeTreatYy,'-',01,'-',01))
-	 WHEN FindNumericValue(v.completeTreatDd)<1 AND FindNumericValue(v.completeTreatMm)>0 AND FindNumericValue(v.completeTreatYy)>0 THEN date(CONCAT(v.completeTreatYy,'-',v.completeTreatMm,'-',01))
-	 WHEN FindNumericValue(v.completeTreatDd)>0 AND FindNumericValue(v.completeTreatMm)>0 AND FindNumericValue(v.completeTreatYy)>0 THEN date(CONCAT(v.completeTreatYy,'-',v.completeTreatMm,'-',v.completeTreatDd))
-	 ELSE NULL
-END,1,e.date_created,UUID()
+formatDate(v.completeTreatYy,v.completeTreatMm,v.completeTreatDd),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.tbStatus v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
@@ -739,9 +715,7 @@ SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.conce
 FROM openmrs.obs
 WHERE openmrs.obs.concept_id=1421 
 GROUP BY openmrs.obs.person_id,encounter_id;
-
-
-set vobs_id=last_insert_id();	
+	
 
 		
 		/*migration for the concept*/
@@ -756,10 +730,7 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 /*migration for MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1410,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN v.vaccHepB=1 AND FindNumericValue(v.vaccHepBMm)<1 AND FindNumericValue(v.vaccHepBYy)>0 THEN CONCAT(v.vaccHepBYy,'-',01,'-',01)
-	 WHEN v.vaccHepB=1 AND FindNumericValue(v.vaccHepBMm)>0 AND FindNumericValue(v.vaccHepBYy)>0 THEN CONCAT(v.vaccHepBYy,'-',v.vaccHepBMm,'-',01)
-	 ELSE NULL
-END,1,e.date_created,UUID()
+formatDate(v.vaccHepBYy,v.vaccHepBMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals  v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -769,13 +740,14 @@ v.vaccHepB=1 AND FindNumericValue(v.vaccHepBYy)>0;
 /*migration for Nombre de dose */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-FindNumericValue(CASE WHEN v.vaccHepB=1 AND v.hepBdoses>=0 THEN v.hepBdoses ELSE NULL END),1,e.date_created,UUID()
+CASE WHEN digits(v.vaccHepB)=1 AND digits(v.hepBdoses)>=0 THEN digits(v.hepBdoses) ELSE NULL END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals  v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.vaccHepB=1 AND v.hepBdoses>=0;
+v.vaccHepB=1 AND digits(v.hepBdoses)>0 and v.hepBdoses<>'';
 
+select 1 as hepatie;
 		/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 		/*MIGRATION FOR Tétanos*/ 
 /*migration for the concept*/
@@ -790,10 +762,7 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 /*migration for MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1410,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN v.vaccTetanus=1 AND FindNumericValue(v.vaccTetanusMm)<1 AND FindNumericValue(v.vaccTetanusYy)>0 THEN CONCAT(v.vaccTetanusYy,'-',01,'-',01)
-	 WHEN v.vaccTetanus=1 AND FindNumericValue(v.vaccTetanusMm)>0 AND FindNumericValue(v.vaccTetanusYy)>0 THEN CONCAT(v.vaccTetanusYy,'-',v.vaccTetanusMm,'-',01)
-	 ELSE NULL
-END,1,e.date_created,UUID()
+formatDate(v.vaccTetanusYy,v.vaccTetanusMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals  v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -801,19 +770,19 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 v.vaccTetanus=1 AND FindNumericValue(v.vaccTetanusYy)>0;
 
 /*migration for Nombre de dose */
-INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
+INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
 CASE WHEN v.vaccTetanus=1 AND v.tetDoses>=0 THEN v.tetDoses ELSE NULL END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals  v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.vaccTetanus=1 AND v.tetDoses>=0 and v.tetDoses<>'';		
+v.vaccTetanus=1 AND v.tetDoses>0 and v.tetDoses<>'';		
 		/*On going*/
 		/*Autre preciser*/
 	/*END OF MIGRATION FOR VACCINS MENU*/
 	
-
+select 2 as vaccin;
 
 /*MIGRATION FOR SYMPTÔMES MENU*/
 	  /*migration for Douleur abdominale*/
@@ -1345,7 +1314,7 @@ where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and o.concept_id=7044
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id;			
 	/*END OF MIGRATION FOR SYMPTÔMES MENU*/
 
-	
+select 2 as symptome;	
  
  /*MIGRATION FOR EXAMEN CLINIQUE*/
 		/* Migration for Général*/
@@ -1512,6 +1481,7 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 		
 	/*END OF MIGRATION FOR EXAMEN CLINIQUE*/
  
+ select 3 as examen;
   
   /*MIGRATION FOR ÉVALUATION TB*/
 		/*Migration for Présence de cicatrice BCG*/
@@ -1545,9 +1515,7 @@ v.suspicionTBwSymptoms=1;
 		/*Date d'arrêt de I'INH*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163284,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN FindNumericValue(v.arretINHMm)<0 AND FindNumericValue(v.arretINHYy)>0 THEN CONCAT(v.arretINHYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.arretINHMm)>0 AND FindNumericValue(v.arretINHYy)>0 THEN CONCAT(v.arretINHYy,'-',v.arretINHMm,'-',01)
-	 ELSE NULL END,1,e.date_created,UUID()
+formatDate(v.arretINHYy,v.arretINHMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.tbStatus  v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
@@ -1562,7 +1530,7 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.noTBsymptoms=1;		
 
-		
+select 4 as tbEvaluation;		
 	/*END OF MIGRATION FOR ÉVALUATION TB aeyaitahlu*/
   
   /*MIGRATION FOR ANTÉCEDENTS MÉDICAUX ET DIAGNOSTICS ACTUELS*/
@@ -1712,9 +1680,7 @@ v.drugID=1;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v ,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1724,9 +1690,7 @@ v.drugID=1 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v 	,itech.obs_concept_group og 	
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1796,9 +1760,7 @@ v.drugID=8;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1808,9 +1770,7 @@ v.drugID=8 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v 	,itech.obs_concept_group og	
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1881,9 +1841,7 @@ v.drugID=10;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1893,9 +1851,7 @@ v.drugID=10 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1964,9 +1920,7 @@ v.drugID=12;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1976,9 +1930,7 @@ v.drugID=12 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2047,9 +1999,7 @@ v.drugID=20;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2059,9 +2009,7 @@ v.drugID=20 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2131,9 +2079,7 @@ v.drugID=29;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and 
@@ -2143,9 +2089,7 @@ v.drugID=29 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2217,9 +2161,7 @@ v.drugID=31;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2229,9 +2171,7 @@ v.drugID=31 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2302,9 +2242,7 @@ v.drugID=33;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX')D,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2314,9 +2252,7 @@ v.drugID=33 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2385,9 +2321,7 @@ v.drugID=34;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2397,9 +2331,7 @@ v.drugID=34 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2468,9 +2400,7 @@ v.drugID=11;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2480,9 +2410,7 @@ v.drugID=11 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2553,9 +2481,7 @@ v.drugID=23;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2565,9 +2491,7 @@ v.drugID=23 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2636,9 +2560,7 @@ v.drugID=5;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2648,9 +2570,7 @@ v.drugID=5 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2720,9 +2640,7 @@ v.drugID=6;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2732,9 +2650,7 @@ v.drugID=6 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2804,9 +2720,7 @@ v.drugID=16;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and 
@@ -2816,9 +2730,7 @@ v.drugID=16 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and 
@@ -2888,9 +2800,7 @@ v.drugID=21;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2900,9 +2810,7 @@ v.drugID=21 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2975,7 +2883,7 @@ c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') =
 (v.zidovudineARVpreg=1 OR v.nevirapineARVpreg=1 OR v.unknownARVpreg=1 OR v.otherARVpreg=1);
 	/*END OF ARV ET GROSSESSE (SEXE F) MENU*/	
 
-
+select 6 as grossesse;
 	
 /*MIGRATION FOR AUTRES TRAITEMENTS PRÉCÉDENTS MENU */
 		/*Migration for Ethambutol*/
@@ -3016,9 +2924,7 @@ v.drugID=13;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3028,9 +2934,7 @@ v.drugID=13 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v ,itech.obs_concept_group og		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3085,9 +2989,7 @@ v.drugID=18;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and 
@@ -3097,9 +2999,7 @@ v.drugID=18 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and 
@@ -3153,9 +3053,7 @@ v.drugID=24;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and 
@@ -3165,9 +3063,7 @@ v.drugID=24 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3224,9 +3120,7 @@ v.drugID=2;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3236,9 +3130,7 @@ v.drugID=2 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3292,9 +3184,7 @@ v.drugID=9;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3304,9 +3194,7 @@ v.drugID=9 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3361,9 +3249,7 @@ v.drugID=14;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3373,9 +3259,7 @@ v.drugID=14 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3429,9 +3313,7 @@ v.drugID=19;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3441,9 +3323,7 @@ v.drugID=19 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3497,9 +3377,7 @@ v.drugID=35;
 		/*Migration for Début MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1190,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.startMm)<1 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.startMm)>0 AND FindNumericValue(v.startYy)>0 THEN CONCAT(v.startYy,'-',v.startMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.startYy,v.startMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -3509,9 +3387,7 @@ v.drugID=35 AND FindNumericValue(v.startYy)>0;
 		/*Migration for Arrêt MM/AA*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1191,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-CASE WHEN FindNumericValue(v.stopMm)<1 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',01,'-',01)
-	 WHEN FindNumericValue(v.stopMm)>0 AND FindNumericValue(v.stopYy)>0 THEN CONCAT(v.stopYy,'-',v.stopMm,'-',01)
-	 else null END,1,e.date_created,UUID()
+formatDate(v.stopYy,v.stopMm,'XX'),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.drugs v,itech.obs_concept_group og 		
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
