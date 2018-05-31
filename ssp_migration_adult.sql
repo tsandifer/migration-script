@@ -9,22 +9,7 @@ SET SQL_SAFE_UPDATES = 0;
   /*Start migration for Électrophorèse de l’hémoglobine :*/
   INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,
 		creator,date_created,uuid)
-		SELECT DISTINCT c.patient_id,161421,c.encounter_id,
-		CASE WHEN ((FindNumericValue(l.resultDateYy)<1 OR FindNumericValue(l.resultDateYy) is null)
-			AND (FindNumericValue(l.visitDateMm) < 1 OR FindNumericValue(l.visitDateMm) is null)
-			AND (FindNumericValue(l.visitDateDd) < 1) OR FindNumericValue(l.visitDateDd) is null) 
-			THEN e.createDate
-	WHEN((FindNumericValue(l.resultDateYy)>0 AND FindNumericValue(l.resultDateYy) is not null) 
-		AND (FindNumericValue(l.visitDateMm) < 1 OR FindNumericValue(l.visitDateMm) is null)
-		AND (FindNumericValue(l.visitDateDd) > 0 AND FindNumericValue(l.visitDateDd) is not null)) 
-		THEN DATE_FORMAT(concat(FindNumericValue(l.resultDateYy),"-",01,"-",FindNumericValue(l.visitDateDd)),"%Y-%m-%d")
-	WHEN((FindNumericValue(l.visitDateYy)>0 AND FindNumericValue(l.visitDateYy) is not null)
-	    AND (FindNumericValue(l.visitDateMm) > 0 AND FindNumericValue(l.visitDateMm) is not null)
-		AND (FindNumericValue(l.visitDateDd) < 1) OR FindNumericValue(l.visitDateDd) is null) 
-	THEN DATE_FORMAT(concat(FindNumericValue(l.visitDateYy),"-",FindNumericValue(l.visitDateMm),"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(FindNumericValue(l.visitDateYy),"-",FindNumericValue(l.visitDateMm),"-",FindNumericValue(l.visitDateDd)),"%Y-%m-%d")
-	END,c.location_id,
+		SELECT DISTINCT c.patient_id,161421,c.encounter_id,c.encounter_datetime,c.location_id,
 	CASE WHEN (l.result=1) THEN 'AS'
 		WHEN (l.result=2) THEN 'SS'
 		WHEN (l.result=4) THEN 'AC'
@@ -43,14 +28,7 @@ SET SQL_SAFE_UPDATES = 0;
 		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,comments,
 	creator,date_created,uuid)
 	SELECT DISTINCT c.patient_id,161421,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,'Autre',ito.value_text,1,e.createDate, UUID()
+	c.encounter_datetime,c.location_id,'Autre',ito.value_text,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid 
 	AND e.siteCode = ito.location_id 
@@ -80,15 +58,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
   INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1651,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,151185,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1651,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,151185,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid 
 	AND e.siteCode = ito.location_id 
@@ -100,15 +70,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Date*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,160715,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,DATE(ito.value_datetime),1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,160715,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,DATE(ito.value_datetime),1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid 
 	AND e.siteCode = ito.location_id 
@@ -138,15 +100,7 @@ SET SQL_SAFE_UPDATES = 0;
   /*Concept*/
   INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1651,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,163464,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1651,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,163464,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid 
 	AND e.siteCode = ito.location_id 
@@ -158,15 +112,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Date*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,160715,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,DATE(ito.value_datetime),1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,160715,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,DATE(ito.value_datetime),1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid 
 	AND e.siteCode = ito.location_id 
@@ -196,15 +142,7 @@ SET SQL_SAFE_UPDATES = 0;
 	
   INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,160716,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,ito.value_text,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,160716,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,ito.value_text,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid 
 	AND e.siteCode = ito.location_id 
@@ -235,15 +173,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1628,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,1434,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1628,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,1434,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid
 	AND e.siteCode = ito.location_id 
@@ -259,15 +189,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Adénopathie*/
 		  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,135488,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,135488,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid 
 	AND e.siteCode = ito.location_id 
@@ -285,15 +207,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*end table*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,151,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,151,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -327,15 +241,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Agression Auto-infligée*/
 		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,128808,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,128808,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -345,15 +251,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Accident Voie Publique*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,119964,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,119964,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -363,15 +261,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Brûlures, précisez:*/
 		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,146623,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,146623,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -407,15 +297,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Fracture osseuse*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,177,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,177,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -425,15 +307,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Plaie, précisez:*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,159328,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,159328,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -443,15 +317,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Arme à feu*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,117746,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,117746,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -461,15 +327,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Arme blanche*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,158843,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,158843,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -479,15 +337,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Autres:*/
 		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	comments,creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,114767,ito.value_text,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,114767,ito.value_text,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -497,15 +347,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Trauma crânien*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,116838,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,116838,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -515,15 +357,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Epistaxis*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,133499,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,133499,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -533,15 +367,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Œil rouge*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,130184,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,130184,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -551,15 +377,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Otalgie*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,131602,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,131602,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -569,15 +387,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Otorrhée*/
 		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,151702,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,151702,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -587,15 +397,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Brûlures mictionnelles*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,163606,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,163606,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -605,15 +407,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Ecoulement uréthral*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,123529,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,123529,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -623,15 +417,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Hématurie*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,840,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,840,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -641,15 +427,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Hémorragie vaginale*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,147232,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,147232,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -659,15 +437,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Pertes vaginales*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,123396,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,123396,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -677,15 +447,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Polyurie*/
 		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,129510,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,129510,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -695,15 +457,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Ulcération(s)*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,145762,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,145762,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -713,15 +467,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Retard des Règles*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,134340,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,134340,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -731,15 +477,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Troubles mentaux, précisez:*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,134337,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,134337,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -775,15 +513,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Aphasie*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,121529,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,121529,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -793,15 +523,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Boiterie/Steppage*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,122936,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,122936,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -811,15 +533,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Céphalée/Maux de tète*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,139084,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,139084,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -829,15 +543,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Hémiplégie*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,117655,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,117655,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -847,15 +553,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Paralysie flasque*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,160426,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,160426,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -865,15 +563,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Paraplégie*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,130843,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,130843,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -883,15 +573,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Syncope*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,125166,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,125166,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -901,15 +583,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Vertiges*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,111525,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,111525,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -919,15 +593,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Palpitations*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,130987,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,130987,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -937,15 +603,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Eruptions cutanées, précisez:*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,512,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,512,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -980,15 +638,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Prurit*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,128310,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,128310,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -998,15 +648,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Constipation*/
 		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,996,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,996,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1016,15 +658,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Diarrhée < 2 semaines*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,163465,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,163465,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1034,15 +668,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Diarrhée ≥ 2 semaines*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,5018,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,5018,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1053,15 +679,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Dysphagie*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,118789,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,118789,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1071,15 +689,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Hématémèse*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,139006,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,139006,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1089,15 +699,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Ictère/jaunisse*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,136443,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,136443,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1107,15 +709,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Inappétence / anorexie*/
 	 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,6031,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,6031,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1125,15 +719,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Méléna*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,134394,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,134394,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1143,15 +729,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Nausée*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,5978,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,5978,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1161,15 +739,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Pyrosis*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,139059,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,139059,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1179,15 +749,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Vomissements*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159614,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,122983,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159614,c.encounter_id,c.encounter_datetime,c.location_id,122983,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1216,15 +778,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,111103,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,111103,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1235,15 +789,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1254,15 +800,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1291,15 +829,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,121629,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,121629,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1310,15 +840,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1329,15 +851,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1395,15 +909,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,121375,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,121375,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1414,15 +920,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1433,15 +931,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1470,15 +960,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,142474,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,142474,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1489,15 +971,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1508,15 +982,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1545,15 +1011,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,142473,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,142473,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1564,15 +1022,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1583,15 +1033,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1621,15 +1063,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,161887,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,161887,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1640,15 +1074,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1659,15 +1085,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1696,15 +1114,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,138868,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,138868,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1715,15 +1125,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1734,15 +1136,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1771,15 +1165,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,126513,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,126513,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1790,15 +1176,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1809,15 +1187,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1846,15 +1216,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,155,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,155,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1865,15 +1227,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1884,15 +1238,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1921,15 +1267,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,127990,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,127990,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1940,15 +1278,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1959,15 +1289,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -1996,15 +1318,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,1434,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,1434,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2015,15 +1329,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2034,15 +1340,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2071,15 +1369,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,117399,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,117399,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2090,15 +1380,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2109,15 +1391,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2146,15 +1420,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,832,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,832,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2165,15 +1431,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2184,15 +1442,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2221,15 +1471,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159619,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159619,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2240,15 +1482,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2259,15 +1493,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2296,15 +1522,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,112,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,112,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2315,15 +1533,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2334,15 +1544,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2372,15 +1574,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,121555,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,121555,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2391,15 +1585,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2410,15 +1596,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2475,15 +1653,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,122604,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,122604,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2494,15 +1664,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2513,15 +1675,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2552,15 +1706,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,119905,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,119905,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2571,15 +1717,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2590,15 +1728,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2655,15 +1785,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,114190,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,114190,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2674,15 +1796,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2693,15 +1807,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2730,15 +1836,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,142592,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,142592,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2749,15 +1847,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2768,15 +1858,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2832,15 +1914,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,119399,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,119399,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2851,15 +1925,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2870,15 +1936,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2907,15 +1965,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,163392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,163392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2926,15 +1976,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2945,15 +1987,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -2983,15 +2017,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,141,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,141,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3002,15 +2028,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,
 	CASE WHEN (ito.concept_id = 70302) THEN 159392
 	WHEN (ito.concept_id = 71340) THEN 159393
 	END,1,e.createDate, UUID()
@@ -3024,15 +2042,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3061,15 +2071,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,119354,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,119354,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3080,15 +2082,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3099,15 +2093,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3136,15 +2122,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,140,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,140,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3155,15 +2133,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3174,15 +2144,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3211,15 +2173,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,154983,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,154983,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3230,15 +2184,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3249,15 +2195,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3291,15 +2229,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,158842,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,158842,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3310,15 +2240,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3329,15 +2251,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3366,15 +2280,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,116344,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,116344,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3385,15 +2291,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3404,15 +2302,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3441,15 +2331,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,115835,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,115835,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3460,15 +2342,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3479,15 +2353,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3544,15 +2410,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,131115,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,131115,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3563,15 +2421,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3582,15 +2432,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3647,15 +2489,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,119387,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,119387,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3666,15 +2500,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3685,15 +2511,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3722,15 +2540,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,114100,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,114100,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3741,15 +2551,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3760,15 +2562,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3797,15 +2591,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,5258,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,5258,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3816,15 +2602,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3835,15 +2613,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3872,15 +2642,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,160146,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,160146,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3891,15 +2653,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3910,15 +2664,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3947,15 +2693,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,134561,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,134561,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3966,15 +2704,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -3985,15 +2715,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4022,15 +2744,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,113205,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,113205,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4041,15 +2755,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4060,15 +2766,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4097,15 +2795,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,163402,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,163402,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4116,15 +2806,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4135,15 +2817,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4172,15 +2846,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,119508,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,119508,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4191,15 +2857,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4210,15 +2868,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4247,15 +2897,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,124957,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,124957,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4266,15 +2908,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4285,15 +2919,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4322,15 +2948,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,892,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,892,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4341,15 +2959,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4360,15 +2970,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4397,15 +2999,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,131715,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,131715,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4416,15 +3010,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4435,15 +3021,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4472,15 +3050,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,113881,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,113881,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4491,15 +3061,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4510,15 +3072,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4548,15 +3102,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,146623,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,146623,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4567,15 +3113,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4586,15 +3124,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4650,15 +3180,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,177,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,177,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4669,15 +3191,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4688,15 +3202,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4753,15 +3259,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159328,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159328,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4772,15 +3270,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4791,15 +3281,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4856,15 +3338,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,116838,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,116838,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4875,15 +3349,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4894,15 +3360,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4932,15 +3390,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,116023,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,116023,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4951,15 +3401,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -4970,15 +3412,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -5007,15 +3441,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Concept*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1284,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,146221,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1284,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,146221,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -5026,15 +3452,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Confirmé,Suspecté*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159394,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159394,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159392,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -5045,15 +3463,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Primaire,Secondaire*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159946,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159946,c.encounter_id,c.encounter_datetime,c.location_id,cg.obs_id,159943,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs_concept_group cg
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -5068,15 +3478,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Statut VIH*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1169,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,
+	SELECT DISTINCT c.patient_id,1169,c.encounter_id,c.encounter_datetime,c.location_id,
 	CASE WHEN(ito.value_numeric = 1) THEN 1402
 	WHEN(ito.value_numeric = 2) THEN 664
 	WHEN(ito.value_numeric = 4) THEN 703
@@ -5089,15 +3491,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Date*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,160554,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,ito.value_datetime,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,160554,c.encounter_id,c.encounter_datetime,c.location_id,ito.value_datetime,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -5107,15 +3501,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Si positif, enrôlé(e) en soins :*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159811,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,
+	SELECT DISTINCT c.patient_id,159811,c.encounter_id,c.encounter_datetime,c.location_id,
 	CASE WHEN(ito.value_numeric = 1) THEN 1065
 	WHEN(ito.value_numeric = 2) THEN 1066
 	END,1,e.createDate, UUID()
@@ -5129,16 +3515,8 @@ SET SQL_SAFE_UPDATES = 0;
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,
 	creator,date_created,uuid)
 	SELECT DISTINCT c.patient_id,5497,c.encounter_id,
-	IF(ito1.value_datetime <>'' AND ito1.value_datetime is not null, DATE(ito1.value_datetime),
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-		WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-			DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-		WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-			DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-		ELSE
-			DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-		END
-	),c.location_id,digits(ito.value_numeric),1,e.createDate, UUID()
+	IF(ito1.value_datetime <>'' AND ito1.value_datetime is not null, DATE(ito1.value_datetime),	c.encounter_datetime)
+	,c.location_id,digits(ito.value_numeric),1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs ito1
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -5151,14 +3529,7 @@ SET SQL_SAFE_UPDATES = 0;
 		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
 	SELECT DISTINCT c.patient_id,160117,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,
+	c.encounter_datetime,c.location_id,
 	CASE WHEN(ito.value_numeric = 1) THEN 160119
 	WHEN(ito.value_numeric = 2) THEN 1461
 	END,1,e.createDate, UUID()
@@ -5171,15 +3542,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Si oui, médicaments :*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,163322,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,ito.value_text,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,163322,c.encounter_id,c.encounter_datetime,c.location_id,ito.value_text,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -5189,15 +3552,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Date de début :*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,159599,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,ito.value_datetime,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,159599,c.encounter_id,c.encounter_datetime,c.location_id,ito.value_datetime,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
@@ -5208,15 +3563,7 @@ SET SQL_SAFE_UPDATES = 0;
 	/*Start migration for Prophylaxie :*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
 	creator,date_created,uuid)
-	SELECT DISTINCT c.patient_id,1110,c.encounter_id,
-	CASE WHEN (e.visitDateYy is null AND e.visitDateMm < 1 AND e.visitDateDd < 1) THEN NULL
-	WHEN(e.visitDateMm < 1 AND e.visitDateDd > 0) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",01,"-",e.visitDateDd),"%Y-%m-%d")
-	WHEN(e.visitDateMm > 0 AND e.visitDateDd < 1) THEN 
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",01),"%Y-%m-%d")
-	ELSE
-		DATE_FORMAT(concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd),"%Y-%m-%d")
-	END,c.location_id,1679,1,e.createDate, UUID()
+	SELECT DISTINCT c.patient_id,1110,c.encounter_id,c.encounter_datetime,c.location_id,1679,1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id

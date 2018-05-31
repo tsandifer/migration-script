@@ -1,29 +1,3 @@
-drop function if exists IsNumeric;
-CREATE FUNCTION IsNumeric (val varchar(255)) RETURNS tinyint 
- RETURN val REGEXP '^(-|\\+){0,1}([0-9]+\\.[0-9]*|[0-9]*\\.[0-9]+|[0-9]+)$';
-
-DROP FUNCTION if exists FindNumericValue;
-DELIMITER $$
- 
-CREATE FUNCTION FindNumericValue(val VARCHAR(255)) RETURNS VARCHAR(255)
-    DETERMINISTIC
-BEGIN
-  DECLARE idx INT DEFAULT 0;
-  IF ISNULL(val) THEN RETURN NULL; END IF;
-
-  IF LENGTH(val) = 0 THEN RETURN ""; END IF;
- SET idx = LENGTH(val);
-  WHILE idx > 0 DO
-   IF IsNumeric(SUBSTRING(val,idx,1)) = 0 THEN
-    SET val = REPLACE(val,SUBSTRING(val,idx,1),"");
-    SET idx = LENGTH(val)+1;
-   END IF;
-    SET idx = idx - 1;
-  END WHILE;
-   RETURN val;
-END
-$$
-DELIMITER ;
 drop procedure if exists ordonanceMigration;
 DELIMITER $$ 
 CREATE PROCEDURE ordonanceMigration()
@@ -164,11 +138,8 @@ v.drugID=1;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
-case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
-     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
-case when v.dispensed=1 then 1
-	 else null
-end ,1,e.date_created,UUID()
+ifnull(formatDate(v.dispDateYy,v.dispDateMm,v.dispDateDd),e.encounter_datetime),e.location_id,og.obs_id,
+case when v.dispensed=1 then 1 else null end ,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.prescriptions v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -310,8 +281,7 @@ v.drugID=8;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
-case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
-     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
+ifnull(formatDate(v.dispDateYy,v.dispDateMm,v.dispDateDd),e.encounter_datetime),e.location_id,og.obs_id,
 case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
@@ -453,8 +423,7 @@ v.drugID=10;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
-case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
-     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
+ifnull(formatDate(v.dispDateYy,v.dispDateMm,v.dispDateDd),e.encounter_datetime),e.location_id,og.obs_id,
 case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
@@ -596,8 +565,7 @@ v.drugID=12;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
-case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
-     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
+ifnull(formatDate(v.dispDateYy,v.dispDateMm,v.dispDateDd),e.encounter_datetime),e.location_id,og.obs_id,
 case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()
@@ -741,8 +709,7 @@ v.drugID=20;
  /* MÉDICAMENT dispense A LA VISITE */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1276,e.encounter_id,
-case when v.dispDateDd>0 and dispDateMm>0 and dispDateYy>0 then date_format(concat(v.dispDateYy,'-',v.dispDateMm,'-',v.dispDateDd),'%Y-%m-%d')
-     else e.encounter_datetime end as obs_datetime,e.location_id,og.obs_id,
+ifnull(formatDate(v.dispDateYy,v.dispDateMm,v.dispDateDd),e.encounter_datetime),e.location_id,og.obs_id,
 case when v.dispensed=1 then 1
 	 else null
 end ,1,e.date_created,UUID()

@@ -28,6 +28,8 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.pedChildAware in (1,2,4);
 
+
+select 1 as stVih;
 /* Le parent/substitut est-il au courant du statut VIH?*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163525,e.encounter_id,e.encounter_datetime,e.location_id,
@@ -41,7 +43,7 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.pedParentAware in (1,2,4);
 
-
+select 2 as stVih;
 /* ANTÉCÉDENTS MÉDICAUX DE LA MÈRE BIOLOGIQUE */
 /* Le parent/substitut est-il au courant du statut VIH?*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
@@ -54,19 +56,19 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.pedMotherHistUnk=1;
 
-
+select 3 as stVih;
 	  /*concept group */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,160593,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
  FROM itech.encounter c, encounter e,itech.pedHistory v
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-   (pedMotherHistDobYy>0 or 
-     pedMotherHistRecentTb>0 or 
-     pedMotherHistActiveTb>0 or 
-     pedMotherHistTreatTb>0 or 
+   (digits(pedMotherHistDobYy)>0 or 
+     digits(pedMotherHistRecentTb)>0 or 
+     digits(pedMotherHistActiveTb)>0 or 
+     digits(pedMotherHistTreatTb)>0 or 
      FindNumericValue(pedMotherHistTreatTbYy)>0);
-
+select 5 as trt1;
 delete from itech.obs_concept_group where 1;		
 INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
 SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
@@ -81,6 +83,7 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 FindNumericValue(v.pedMotherHistDobYy)>0;
+select 5 as trt2;
 /* Date de naissance de la mère*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,160751,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
@@ -90,6 +93,8 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 FindNumericValue(v.pedMotherHistDobYy)>0;
+
+select 5 as trt3;
 /* migration TB récente*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,160592,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
@@ -100,7 +105,9 @@ FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedMotherHistRecentTb>0;
+digits(v.pedMotherHistRecentTb)>0;
+
+select 5 as trt4;
 /* migration TB active (avec crachats positifs)*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,160592,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
@@ -111,7 +118,8 @@ FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedMotherHistActiveTb>0;
+digits(v.pedMotherHistActiveTb)>0;
+select 5 as trt5;
 
 /* migration Si TB active, traitement TB en cours*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
@@ -124,7 +132,9 @@ FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedMotherHistTreatTb>0;
+digits(v.pedMotherHistTreatTb)>0;
+
+select 5 as trt6;
 /* migration Date de début de traitment*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163526,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
@@ -135,6 +145,8 @@ og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 FindNumericValue(v.pedMotherHistTreatTbYy)>0;
 
+select 5 as trt;
+
 /*migration de grossesse */
 	  /*concept group */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
@@ -142,10 +154,10 @@ SELECT DISTINCT e.patient_id,163770,e.encounter_id,e.encounter_datetime,e.locati
  FROM itech.encounter c, encounter e,itech.pedHistory v
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-  (pedMotherHistGrosGrav>0 or 
-     pedMotherHistGrosPara>0 or 
-     pedMotherHistGrosAbor>0 or 
-     pedMotherHistGrosViva>0);
+  (digits(pedMotherHistGrosGrav)>0 or 
+     digits(pedMotherHistGrosPara)>0 or 
+     digits(pedMotherHistGrosAbor)>0 or 
+     digits(pedMotherHistGrosViva)>0);
 
 delete from itech.obs_concept_group where 1;		
 INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
@@ -157,47 +169,47 @@ GROUP BY openmrs.obs.person_id,encounter_id;
 /* gravida*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,5624,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-	CASE WHEN v.pedMotherHistGrosGrav<>'' THEN v.pedMotherHistGrosGrav
+	CASE WHEN digits(v.pedMotherHistGrosGrav)>=0 THEN digits(v.pedMotherHistGrosGrav)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedMotherHistGrosGrav>0;
+digits(v.pedMotherHistGrosGrav)>0;
 /* Para*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1053,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-	CASE WHEN v.pedMotherHistGrosPara<>'' THEN v.pedMotherHistGrosPara
+	CASE WHEN digits(v.pedMotherHistGrosPara)>0 THEN digits(v.pedMotherHistGrosPara)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedMotherHistGrosPara>0;
+digits(v.pedMotherHistGrosPara)>0;
 /* Aborta*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1823,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-	CASE WHEN v.pedMotherHistGrosAbor<>'' THEN v.pedMotherHistGrosAbor
+	CASE WHEN digits(v.pedMotherHistGrosAbor)>0 THEN digits(v.pedMotherHistGrosAbor)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedMotherHistGrosAbor>0;
+digits(v.pedMotherHistGrosAbor)>0;
 /* Enfant Vivant*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1825,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-	CASE WHEN v.pedMotherHistGrosViva<>'' THEN v.pedMotherHistGrosViva
+	CASE WHEN digits(v.pedMotherHistGrosViva)>0 THEN digits(v.pedMotherHistGrosViva)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedMotherHistGrosViva>0;
+digits(v.pedMotherHistGrosViva)>0;
 
 
 select 1 as antecedent; 
@@ -211,9 +223,9 @@ SELECT DISTINCT e.patient_id,163528,e.encounter_id,e.encounter_datetime,e.locati
  FROM itech.encounter c, encounter e,itech.pedHistory v
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-   (v.pedMotherHistGrosDeadAge1>0 or v.pedMotherHistGrosDeadCause1 or v.pedMotherHistGrosDeadUnk1>0 or
-     v.pedMotherHistGrosDeadAge2>0 or v.pedMotherHistGrosDeadCause2 or v.pedMotherHistGrosDeadUnk2>0 or
-     v.pedMotherHistGrosDeadAge3>0 or v.pedMotherHistGrosDeadCause3 or v.pedMotherHistGrosDeadUnk3>0
+   (digits(v.pedMotherHistGrosDeadAge1)>0 or digits(v.pedMotherHistGrosDeadCause1)>0 or digits(v.pedMotherHistGrosDeadUnk1)>0 or
+     digits(v.pedMotherHistGrosDeadAge2)>0 or digits(v.pedMotherHistGrosDeadCause2)>0 or digits(v.pedMotherHistGrosDeadUnk2)>0 or
+     digits(v.pedMotherHistGrosDeadAge3)>0 or digits(v.pedMotherHistGrosDeadCause3)>0 or digits(v.pedMotherHistGrosDeadUnk3)>0
      );
 
 delete from itech.obs_concept_group where 1;		
@@ -225,36 +237,36 @@ GROUP BY openmrs.obs.person_id,encounter_id;
 /* age du deces*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163527,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-	CASE WHEN v.pedMotherHistGrosDeadAge1>0 THEN v.pedMotherHistGrosDeadAge1
+	CASE WHEN digits(v.pedMotherHistGrosDeadAge1)>0 THEN digits(v.pedMotherHistGrosDeadAge1)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-(v.pedMotherHistGrosDeadAge1>0);
+digits(v.pedMotherHistGrosDeadAge1>0);
 /*----------------------------------------------------------------*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163527,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-	CASE WHEN v.pedMotherHistGrosDeadAge2>0 THEN v.pedMotherHistGrosDeadAge2
+	CASE WHEN digits(v.pedMotherHistGrosDeadAge2)>0 THEN digits(v.pedMotherHistGrosDeadAge2)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-(v.pedMotherHistGrosDeadAge2>0);
+digits(v.pedMotherHistGrosDeadAge2>0);
 /*----------------------------------------------------------------*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163527,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-	CASE WHEN v.pedMotherHistGrosDeadAge3>0 THEN v.pedMotherHistGrosDeadAge3
+	CASE WHEN digits(v.pedMotherHistGrosDeadAge3)>0 THEN digits(v.pedMotherHistGrosDeadAge3)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-(v.pedMotherHistGrosDeadAge3>0);
+digits(v.pedMotherHistGrosDeadAge3>0);
 
 
 select 1 as Age; 
@@ -275,26 +287,26 @@ select 1 as Cause1;
 /*----------------------------------------------------------------*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159482,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-	CASE WHEN v.pedMotherHistGrosDeadCause2>0 THEN v.pedMotherHistGrosDeadCause2
+	CASE WHEN v.pedMotherHistGrosDeadCause2<>'' THEN v.pedMotherHistGrosDeadCause2
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-(v.pedMotherHistGrosDeadCause2>0);
+v.pedMotherHistGrosDeadCause2<>'';
 select 1 as Cause2; 
 /*----------------------------------------------------------------*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_text,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159482,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-	CASE WHEN v.pedMotherHistGrosDeadCause3>0 THEN v.pedMotherHistGrosDeadCause3
+	CASE WHEN v.pedMotherHistGrosDeadCause3<>'' THEN v.pedMotherHistGrosDeadCause3
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-(v.pedMotherHistGrosDeadCause3>0);
+(v.pedMotherHistGrosDeadCause3<>'');
 
 select 1 as Cause3; 
 
@@ -683,46 +695,46 @@ v.pedFratHistHivStatFrat=8;
 /* VIH NEGATIF */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163535,e.encounter_id,e.encounter_datetime,e.location_id,
-	CASE WHEN v.pedFratHistHivStatNumNeg>0 THEN v.pedFratHistHivStatNumNeg
+	CASE WHEN digits(v.pedFratHistHivStatNumNeg)>0 THEN digits(v.pedFratHistHivStatNumNeg)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedFratHistHivStatNumNeg>0;
+digits(v.pedFratHistHivStatNumNeg)>0;
 
 /* VIH POSITIF */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159906,e.encounter_id,e.encounter_datetime,e.location_id,
-	CASE WHEN v.pedFratHistHivStatNumPos>0 THEN v.pedFratHistHivStatNumPos
+	CASE WHEN digits(v.pedFratHistHivStatNumPos)>0 THEN digits(v.pedFratHistHivStatNumPos)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedFratHistHivStatNumPos>0;
+digits(v.pedFratHistHivStatNumPos)>0;
 
 /* VIH INCONU */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163536,e.encounter_id,e.encounter_datetime,e.location_id,
-	CASE WHEN v.pedFratHistHivStatNumUnk>0 THEN v.pedFratHistHivStatNumUnk
+	CASE WHEN digits(v.pedFratHistHivStatNumUnk)>0 THEN digits(v.pedFratHistHivStatNumUnk)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedFratHistHivStatNumUnk>0;
+digits(v.pedFratHistHivStatNumUnk)>0;
 
 /* Frères ou soeurs décédés du SIDA */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163537,e.encounter_id,e.encounter_datetime,e.location_id,
-	CASE WHEN v.pedFratHistHivStatNumDead>0 THEN v.pedFratHistHivStatNumDead
+	CASE WHEN digits(v.pedFratHistHivStatNumDead)>0 THEN digits(v.pedFratHistHivStatNumDead)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.pedHistory v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedFratHistHivStatNumDead>0;
+digits(v.pedFratHistHivStatNumDead)>0;
 
 
 select 1 as vih;
@@ -784,13 +796,13 @@ v.pedInfProMac in (1,2,4);
 /* Dernier compte CD4 */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163542,e.encounter_id,e.encounter_datetime,e.location_id,
-	CASE WHEN v.pedCd4CntPerc>0 THEN v.pedCd4CntPerc
+	CASE WHEN digits(v.pedCd4CntPerc)>0 THEN digits(v.pedCd4CntPerc)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedCd4CntPerc>0;
+digits(v.pedCd4CntPerc)>0;
 
 /* Date Dernier compte CD4 */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
@@ -815,13 +827,13 @@ v.lowestCd4CntNotDone>0;
 /* Virémie la plus récente*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163545,e.encounter_id,formatDate(v.firstViralLoadYy,v.firstViralLoadMm,firstViralLoadDd),e.location_id,
-	CASE WHEN v.firstViralLoad>0 THEN v.firstViralLoad
+	CASE WHEN digits(v.firstViralLoad)>0 THEN digits(v.firstViralLoad)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.firstViralLoad>0 and FindNumericValue(v.firstViralLoadYy)>0;
+digits(v.firstViralLoad)>0 and FindNumericValue(v.firstViralLoadYy)>0;
 
 /*Non effectué,Inconn */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
@@ -953,13 +965,13 @@ v.pedFeedBreast in (1,2,4,8);
 /* Âge au sevrage (en mois) */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163548,e.encounter_id,e.encounter_datetime,e.location_id,
-	CASE WHEN v.pedFeedBreastAge>0 THEN v.pedFeedBreastAge
+	CASE WHEN digits(v.pedFeedBreastAge)>0 THEN digits(v.pedFeedBreastAge)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedFeedBreastAge>0;
+digits(v.pedFeedBreastAge)>0;
 
 /* Lait artificiel */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
@@ -978,13 +990,13 @@ v.pedFeedFormula in (1,2,4,8);
 /* Âge au sevrage (en mois) */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163549,e.encounter_id,e.encounter_datetime,e.location_id,
-	CASE WHEN v.pedFeedFormulaAge>0 THEN v.pedFeedFormulaAge
+	CASE WHEN digits(v.pedFeedFormulaAge)>0 THEN digits(v.pedFeedFormulaAge)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedFeedFormulaAge>0;
+digits(v.pedFeedFormulaAge)>0;
 
 /* Alimentation mixte */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,creator,date_created,uuid)
@@ -1003,13 +1015,13 @@ v.pedFeedMixed in (1,2,4,8);
 /* Âge au sevrage (en mois) */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163550,e.encounter_id,e.encounter_datetime,e.location_id,
-	CASE WHEN v.pedFeedMixedAge>0 THEN v.pedFeedMixedAge
+	CASE WHEN digits(v.pedFeedMixedAge)>0 THEN digits(v.pedFeedMixedAge)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedFeedMixedAge>0;
+digits(v.pedFeedMixedAge)>0;
 
 
 /* Autre alimentation*/
@@ -1029,13 +1041,13 @@ v.pedFeedOther in (1,2,4,8);
 /* Âge au sevrage (en mois) */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163552,e.encounter_id,e.encounter_datetime,e.location_id,
-	CASE WHEN v.pedFeedOtherAge>0 THEN v.pedFeedOtherAge
+	CASE WHEN digits(v.pedFeedOtherAge)>0 THEN digits(v.pedFeedOtherAge)
 	     ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedFeedOtherAge>0;
+digits(v.pedFeedOtherAge)>0;
 
 /* Si lait artificiel, préciser type */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
@@ -1064,45 +1076,45 @@ v.pedFeedOtherType<>'';
 /* Poids à la naissance */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,5916,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.pedVitBirWtUnits=1 THEN v.pedVitBirWt
-	 WHEN v.pedVitBirWtUnits=2  THEN v.pedVitBirWt/2.2046
+CASE WHEN v.pedVitBirWtUnits=1 THEN digits(v.pedVitBirWt)
+	 WHEN v.pedVitBirWtUnits=2  THEN digits(v.pedVitBirWt)/2.2046
 	 ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedVitBirWt>0 and v.pedVitBirWtUnits in (1,2);
+digits(v.pedVitBirWt)>0 and v.pedVitBirWtUnits in (1,2);
 /* Taille à la naissance */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163554,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.pedVitBirLen>0 THEN v.pedVitBirLen
+CASE WHEN digits(v.pedVitBirLen)>0 THEN digits(v.pedVitBirLen)
 	 ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedVitBirLen>0;
+digits(v.pedVitBirLen)>0;
 
 /* Périmètre crânien (PC) à la naissance */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163555,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.pedVitBirPc>0 THEN v.pedVitBirPc
+CASE WHEN digits(v.pedVitBirPc)>0 THEN digits(v.pedVitBirPc)
 	 ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedVitBirPc>0;
+digits(v.pedVitBirPc)>0;
 /*Âge gestationnel à la naissance*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1409,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.pedVitBirGest>0 THEN v.pedVitBirGest
+CASE WHEN digits(v.pedVitBirGest)>0 THEN digits(v.pedVitBirGest)
 	 ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedVitBirGest>0;
+digits(v.pedVitBirGest)>0;
 
 
 /*SIGNES VITAUX ET ANTHROPOMÉTRIE ACTUELS*/
@@ -1110,33 +1122,33 @@ v.pedVitBirGest>0;
 /*Périmètre crânien (PC) */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,5314,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.pedVitCurHeadCirc>0 THEN v.pedVitCurHeadCirc
+CASE WHEN digits(v.pedVitCurHeadCirc)>0 THEN digits(v.pedVitCurHeadCirc)
 	 ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedVitCurHeadCirc>0;
+digits(v.pedVitCurHeadCirc)>0;
 /* Périmètre brachial (PB) */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1343,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.pedVitCurBracCirc>0 THEN v.pedVitCurBracCirc
+CASE WHEN digits(v.pedVitCurBracCirc)>0 THEN digits(v.pedVitCurBracCirc)
 	 ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedVitCurBracCirc>0;
+digits(v.pedVitCurBracCirc)>0;
 /* Saturation en oxygène */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,5092,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.pedVitCurOxySat>0 THEN v.pedVitCurOxySat
+CASE WHEN digits(v.pedVitCurOxySat)>0 THEN digits(v.pedVitCurOxySat)
 	 ELSE NULL
 	END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d')= concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
-v.pedVitCurOxySat>0;
+digits(v.pedVitCurOxySat)>0;
 
 /* ÉVALUATION DU DÉVELOPPEMENT PSYCHOMOTEUR */
 /* Motricité globale*/
@@ -1327,7 +1339,7 @@ v.pedTbEvalPpdRecent in (1,2,4);
 /* hepatiteB*/
 /*concept group*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
-SELECT DISTINCT e.patient_id,1421,e.encounter_id,date(concat(immunizationYy,'-',immunizationMm,'-',immunizationDd)),e.location_id,1,e.date_created,UUID()
+SELECT DISTINCT e.patient_id,1421,e.encounter_id,formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
@@ -1363,7 +1375,7 @@ v.immunizationID =2;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1411,7 +1423,7 @@ v.immunizationID =3;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1459,7 +1471,7 @@ v.immunizationID =4;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1508,7 +1520,7 @@ v.immunizationID =5;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1557,7 +1569,7 @@ v.immunizationID =20;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1606,7 +1618,7 @@ v.immunizationID =14;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1655,7 +1667,7 @@ v.immunizationID =13;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1705,7 +1717,7 @@ v.immunizationID =6;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1755,7 +1767,7 @@ v.immunizationID =21;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1806,7 +1818,7 @@ v.immunizationID =8;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1857,7 +1869,7 @@ v.immunizationID =15;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1907,7 +1919,7 @@ v.immunizationID =16;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -1957,7 +1969,7 @@ v.immunizationID =17;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2008,7 +2020,7 @@ v.immunizationID =18;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2057,7 +2069,7 @@ v.immunizationID =19;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2107,7 +2119,7 @@ v.immunizationID =1;
 /* Dose of imunization*/
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,1418,e.encounter_id,
-formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,v.immunizationSlot,1,e.date_created,UUID()
+formatDate(immunizationYy,immunizationMm,immunizationDd),e.location_id,og.obs_id,digits(v.immunizationSlot),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.immunizations v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2143,7 +2155,7 @@ v.pedLabsSlot=1 and pedLabsID=1;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2206,7 +2218,7 @@ v.pedLabsSlot=2 and pedLabsID=1;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and 
@@ -2270,7 +2282,7 @@ v.pedLabsSlot=3 and pedLabsID=1;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2334,7 +2346,7 @@ v.pedLabsSlot=1 and pedLabsID=2;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v,itech.obs_concept_group og 
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2397,7 +2409,7 @@ v.pedLabsSlot=2 and pedLabsID=2;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2461,7 +2473,7 @@ v.pedLabsSlot=3 and pedLabsID=2;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2525,7 +2537,7 @@ v.pedLabsSlot=1 and pedLabsID=3;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2588,7 +2600,7 @@ v.pedLabsSlot=2 and pedLabsID=3;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and 
@@ -2652,7 +2664,7 @@ v.pedLabsSlot=3 and pedLabsID=3;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2721,7 +2733,7 @@ v.pedLabsSlot=1 and pedLabsID=4;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2784,7 +2796,7 @@ v.pedLabsSlot=2 and pedLabsID=4;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
@@ -2848,7 +2860,7 @@ v.pedLabsSlot=3 and pedLabsID=4;
 /* 	Age de depistage serologique */
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_numeric,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,163540,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,
-case when v.pedLabsResultAge>0 then v.pedLabsResultAge else null end,1,e.date_created,UUID()
+case when digits(v.pedLabsResultAge)>0 then digits(v.pedLabsResultAge) else null end,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e,  itech.pedLabs v ,itech.obs_concept_group og
 WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum and 
 og.person_id=e.patient_id and e.encounter_id=og.encounter_id and

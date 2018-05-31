@@ -27,7 +27,7 @@ DELIMITER ;
 
 DROP FUNCTION if exists `formatDate`;
 DELIMITER $$
-CREATE FUNCTION `formatDate`( dateYy int,dateMm int,dateDd int ) RETURNS char(32) CHARSET utf8
+CREATE FUNCTION `formatDate`( dateYy Varchar(10),dateMm Varchar(10),dateDd Varchar(10) ) RETURNS DATE
 BEGIN
   IF (FindNumericValue(dateYy)<=0)
   THEN 
@@ -64,7 +64,7 @@ BEGIN
   set dateDd='28';
   END IF;
  
-  RETURN concat (dateYy,'-',dateMm,'-',dateDd);
+  RETURN date_format(concat(dateYy,'-',dateMm,'-',dateDd),'%y-%m-%d');
 END$$
 DELIMITER ;
 
@@ -148,32 +148,31 @@ SET SQL_SAFE_UPDATES = 0;
 /* discontinutation */   
    call discontinuationMigration();
    SET SQL_SAFE_UPDATES = 0;
+   select 8 as discontinuation;
 /* travail et accouchemnet*/
    call travailAccMigration();
    SET SQL_SAFE_UPDATES = 0;
+   select 9 as travailAcc;
 /* Adherence */
    call  adherenceMigration();
    SET SQL_SAFE_UPDATES = 0;
-   
+   select 10 as adherence;
 /* OBGYN */   
  call obgynMigration();
  SET SQL_SAFE_UPDATES = 0;
-
+select 11 as obgyn;
 /* SOINS SANTE PRIMAIRE ADULTE */ 
  call sspAdultMigration();
 SET SQL_SAFE_UPDATES = 0;
+select 12 as sspAdult;
 /* SOINS SANTE PRIMAIRE ADULTE */  
  call sspPediatricMigration();
 SET SQL_SAFE_UPDATES = 0;
- 
+ select 13 as sspPediatric;
  /* migration for next VisitDate*/  
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_datetime,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,5096,e.encounter_id,e.encounter_datetime,e.location_id,
-    CASE WHEN c.nxtVisitYy>0 and c.nxtVisitMm>0 and c.nxtVisitDd>0 THEN date(concat(c.nxtVisitYy,'-',c.nxtVisitMm,'-',c.nxtVisitDd))
-	     WHEN c.nxtVisitYy>0 and c.nxtVisitMm>0 and c.nxtVisitDd<1 THEN date(concat(c.nxtVisitYy,'-',c.nxtVisitMm,'-01'))
-	     WHEN c.nxtVisitYy>0 and c.nxtVisitMm<1 and c.nxtVisitDd<1 THEN date(concat(c.nxtVisitYy,'-01-01'))
-		ELSE NULL
-	END,1,e.date_created,UUID()
+formatDate(c.nxtVisitYy,c.nxtVisitMm,c.nxtVisitDd),1,e.date_created,UUID()
 FROM itech.encounter c, encounter e
 WHERE e.uuid = c.encGuid ;
 
@@ -204,7 +203,7 @@ WHERE e.uuid = c.encGuid and encStatus in (3,7);
 /*visit suivi */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159395,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.followupComments<>'' then v.followupComments
+CASE WHEN v.followupComments<>'' then substring(v.followupComments,1000)
 ELSE NULL
 END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.followupTreatment v 
@@ -217,7 +216,7 @@ v.followupComments<>'';
 /* premiere visit  */
 INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_text,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159395,e.encounter_id,e.encounter_datetime,e.location_id,
-CASE WHEN v.assessmentPlan<>'' then v.assessmentPlan
+CASE WHEN v.assessmentPlan<>'' then substring(v.assessmentPlan,1000)
 ELSE NULL
 END,1,e.date_created,UUID()
 FROM itech.encounter c, encounter e, itech.vitals v 

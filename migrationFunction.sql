@@ -27,7 +27,7 @@ DELIMITER ;
 
 DROP FUNCTION if exists `formatDate`;
 DELIMITER $$
-CREATE FUNCTION `formatDate`( dateYy int,dateMm int,dateDd int ) RETURNS char(32) CHARSET utf8
+CREATE FUNCTION `formatDate`( dateYy Varchar(10),dateMm Varchar(10),dateDd Varchar(10) ) RETURNS DATE
 BEGIN
   IF (FindNumericValue(dateYy)<=0)
   THEN 
@@ -64,7 +64,7 @@ BEGIN
   set dateDd='28';
   END IF;
  
-  RETURN concat (dateYy,'-',dateMm,'-',dateDd);
+  RETURN date(concat (dateYy,'-',dateMm,'-',dateDd),'%y-%m-%d');
 END$$
 DELIMITER ;
 
