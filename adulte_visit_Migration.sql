@@ -342,7 +342,7 @@ WHERE e.uuid = c.encGuid and c.patientID = v.patientID and c.seqNum = v.seqNum a
 c.sitecode = v.sitecode and date_format(date(e.encounter_datetime),'%y-%m-%d') = concat(v.visitDateYy,'-',v.visitDateMm,'-',v.visitDateDd) AND 
 v.riskID=12 and v.riskAnswer=1;
 
-
+delete from itech.obs_concept_group where 1;
 INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
 SELECT MAX(openmrs.obs.obs_id) as obs_id,openmrs.obs.person_id,openmrs.obs.concept_id,openmrs.obs.encounter_id
 FROM openmrs.obs

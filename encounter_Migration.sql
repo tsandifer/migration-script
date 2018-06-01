@@ -22,6 +22,9 @@ select visit_type_id into vvisit_type_id from visit_type where uuid='7b0f5697-27
 update itech.encounter set visitDateDd=31 where visitDateMm in (1,3,5,7,8,10,12) and visitDateDd>31;
 update itech.encounter set visitDateDd=30 where visitDateMm in (4,6,9,11) and visitDateDd>30;
 update itech.encounter set visitDateDd=28 where visitDateMm in (2) and visitDateDd>29;
+update itech.encounter e set createDate=concat(e.visitDateYy,'-',e.visitDateMm,'-',e.visitDateDd) where createDate is null or createDate=''; 
+update itech.encounter set lastModified=createDate where lastModified is null or lastModified='' or lastModified like '%0000%'; 
+
   /* remove old obs, visit and encounter data */
 update obs set obs_group_id=null where encounter_id in (select encounter_id from encounter where encounter_type not in (select e.encounter_type_id from encounter_type e where uuid='873f968a-73a8-4f9c-ac78-9f4778b751b6'));
 delete from obs where encounter_id in (select encounter_id from encounter where encounter_type not in (select e.encounter_type_id from encounter_type e where uuid='873f968a-73a8-4f9c-ac78-9f4778b751b6'));
@@ -55,9 +58,7 @@ END IF;
 UPDATE itech.encounter SET encGuid=uuid();
 
 
-update itech.encounter e set createDate=concat(e.visitDateYy,'-',e.visitDateMm,'-',e.visitDateDd) where createDate is null or createDate=''; 
 
-update itech.encounter set lastModified=createDate where lastModified is null or lastModified=''; 
   
  /* create index in table itech.encounter if index is not exists */ 
 select count(*) into mmmIndex from information_schema.statistics where table_name = 'encounter' and index_name = 'eGuid' and table_schema ='itech';
