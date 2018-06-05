@@ -4257,7 +4257,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creat
 SELECT DISTINCT e.patient_id,159947,e.encounter_id,e.encounter_datetime,e.location_id,1,e.date_created,UUID()
  FROM itech.encounter c, encounter e,itech.obs o
 where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and 
-o.concept_id in (70858,71138,71139) and o.value_boolean=1;
+o.concept_id in (70858,71138,71139) and o.value_boolean=1 and c.encounterType in (24,25);
 
 delete from itech.obs_concept_group where 1;		
 INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
@@ -4271,21 +4271,21 @@ GROUP BY openmrs.obs.person_id,encounter_id;
 SELECT DISTINCT e.patient_id,1284,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,149197,1,e.date_created,UUID()
  FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
 where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
-o.concept_id in (70858,71138,71139) and o.value_boolean=1;
+o.concept_id in (70858,71138,71139) and o.value_boolean=1 and c.encounterType in (24,25);
 	
 /* Confirmé,Suspecté */	
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159394,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159392,1,e.date_created,UUID()
  FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
 where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
-o.concept_id in (70858,71138,71139) and o.value_boolean=1;
+o.concept_id in (70858,71138,71139) and o.value_boolean=1 and c.encounterType in (24,25);
 
 /* Primaire,Secondaire */	
  INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,value_coded,creator,date_created,uuid)
 SELECT DISTINCT e.patient_id,159946,e.encounter_id,e.encounter_datetime,e.location_id,og.obs_id,159943,1,e.date_created,UUID()
  FROM itech.encounter c, encounter e,itech.obs o,itech.obs_concept_group og
 where e.uuid = c.encGuid and c.encounter_id=o.encounter_id and og.person_id=e.patient_id and e.encounter_id=og.encounter_id and
-o.concept_id in (70858,71138,71139) and o.value_boolean=1;
+o.concept_id in (70858,71138,71139) and o.value_boolean=1 and c.encounterType in (24,25);
 /*END OF VIH/SIDA [B20]*/
 
 /*Vulvo vaginite [N76.0]*/

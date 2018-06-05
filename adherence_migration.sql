@@ -99,6 +99,7 @@ BEGIN
 		AND e.patientID = ac.patientID
 		AND concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd) =	concat(ac.visitDateYy,"-",ac.visitDateMm,"-",ac.visitDateDd)
 		AND ac.missedDoses IN(1,2,4,8,16) ;
+		
 		select 7 as adherence;
 	/*End migration for Adhérence:
 	Durant les 4 derniers jours, combien de doses du médicament le patient a-t-il-manqué?*/
@@ -123,7 +124,7 @@ BEGIN
 		AND e.siteCode = ac.siteCode
 		AND e.patientID = ac.patientID
 		AND concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd) =	concat(ac.visitDateYy,"-",ac.visitDateMm,"-",ac.visitDateDd)
-		AND ac.missedDoses IN(1,2,4,8,16,32,64,128,256,512,1024) ;
+		AND ac.doseProp IN(1,2,4,8,16,32,64,128,256,512,1024) ;
 		
 		select 8 as adherence;
 		/*End migration for Quel pourcentage de doses le patient a-t-il pris le mois dernier ?*/
@@ -138,6 +139,7 @@ BEGIN
 		AND e.patientID = ac.patientID
 		AND concat(e.visitDateYy,"-",e.visitDateMm,"-",e.visitDateDd) =	concat(ac.visitDateYy,"-",ac.visitDateMm,"-",ac.visitDateDd)
 		AND ac.reasonNotAvail=1;
+		
 		select 9 as adherence;
 		/*A oublié*/
 		INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,

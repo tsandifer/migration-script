@@ -104,7 +104,7 @@ if(mmmIndex=0) then
 
 /* encounter migration data */ 
 INSERT INTO encounter(encounter_type,patient_id,location_id,form_id,visit_id, encounter_datetime,creator,date_created,date_changed,uuid)
-SELECT ALL f.encounterTypeOpenmrs, p.person_id, v.location_id, f.form_id, v.visit_id,
+SELECT distinct f.encounterTypeOpenmrs, p.person_id, v.location_id, f.form_id, v.visit_id,
 date_format(date(concat(case when length(e.visitDateYy)=2 then concat('20',e.visitDateYy) else e.visitDateYy end,'-',e.visitDateMm,'-',e.visitDateDd)),'%y-%m-%d'),1,e.createDate,e.lastModified,e.encGuid
 FROM itech.encounter e, person p, itech.patient j, visit v, itech.typeToForm f
 WHERE p.uuid = j.patGuid and 
@@ -115,13 +115,6 @@ e.encounterType in (1,2,3,4,5,6,12,14,16,17,18,19,20,21,24,25,26,27,28,29,31,32)
 e.encStatus<255 AND
 e.encounterType = f.encounterType 
 ON DUPLICATE KEY UPDATE
-encounter_type=VALUES(encounter_type),
-patient_id=VALUES(patient_id),
-location_id=VALUES(location_id),
-form_id=VALUES(form_id),
-encounter_datetime=VALUES(encounter_datetime),
-creator=VALUES(creator),
-date_created=VALUES(date_created),
 date_changed=VALUES(date_changed);
 
 select 3 as encounter1;
