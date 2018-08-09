@@ -64,7 +64,7 @@ BEGIN
   set dateDd='28';
   END IF;
  
-  RETURN date(concat (dateYy,'-',dateMm,'-',dateDd),'%y-%m-%d');
+  RETURN date(concat (dateYy,'-',dateMm,'-',dateDd));
 END$$
 DELIMITER ;
 
