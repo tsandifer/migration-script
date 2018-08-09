@@ -3496,7 +3496,7 @@ SET SQL_SAFE_UPDATES = 0;
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
 	AND ito.concept_id = 71206
-	AND (ito.value_datetime <>"" AND ito.value_datetime is not null);
+	AND (ito.value_datetime is not null);
 	/*End migration for Statut VIH*/
 	/*Start migration for Si positif, enrôlé(e) en soins :*/
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_coded,
@@ -3515,7 +3515,7 @@ SET SQL_SAFE_UPDATES = 0;
 	INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value_numeric,
 	creator,date_created,uuid)
 	SELECT DISTINCT c.patient_id,5497,c.encounter_id,
-	IF(ito1.value_datetime <>'' AND ito1.value_datetime is not null, DATE(ito1.value_datetime),	c.encounter_datetime)
+	IF(ito1.value_datetime is not null, DATE(ito1.value_datetime),	c.encounter_datetime)
 	,c.location_id,digits(ito.value_numeric),1,e.createDate, UUID()
 	from encounter c, itech.encounter e, itech.obs ito, itech.obs ito1
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
@@ -3557,7 +3557,7 @@ SET SQL_SAFE_UPDATES = 0;
 	WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 	AND e.encounter_id = ito.encounter_id
 	AND ito.concept_id = 71211
-	AND (ito.value_datetime <>"" AND ito.value_datetime is not null);
+	AND (ito.value_datetime is not null);
 	
 	/*End migration for ARV*/
 	/*Start migration for Prophylaxie :*/
