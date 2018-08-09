@@ -347,7 +347,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 		AND e.siteCode = ito.location_id 
 		AND e.encounter_id = ito.encounter_id
 		AND ito.concept_id IN(70698,70771,70776,70781,70786,70791,71121)
-		AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+		AND (ito.value_datetime is not null);
 		/*Finding the last obs_group_id inserted */
 		TRUNCATE TABLE itech.obs_concept_group;
 		INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
@@ -365,7 +365,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id IN(70698,70771,70776,70781,70786,70791,71121)
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			/* Dates */
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -375,7 +375,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70698
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
@@ -386,7 +386,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70771
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
@@ -397,7 +397,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70776
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -407,7 +407,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70781
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -417,7 +417,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70786
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -427,7 +427,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70791
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -437,7 +437,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 71121
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			/*End migration for Vitamine A*/
 			/*Start migration for Fer.*/
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,creator,date_created,uuid)
@@ -447,7 +447,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 		AND e.siteCode = ito.location_id 
 		AND e.encounter_id = ito.encounter_id
 		AND ito.concept_id IN(70699,70772,70777,70782,70787,70792,71122)
-		AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+		AND (ito.value_datetime is not null);
 		/*Finding the last obs_group_id inserted */
 		TRUNCATE TABLE itech.obs_concept_group;
 		INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
@@ -463,7 +463,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			WHERE c.uuid = e.encGuid and e.siteCode = ito.location_id 
 			AND e.encounter_id = ito.encounter_id
 			AND ito.concept_id IN(70699,70772,70777,70782,70787,70792,71122)
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -473,7 +473,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70699
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -483,7 +483,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70772
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -493,7 +493,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70777
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -503,7 +503,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70782
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -513,7 +513,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70787
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -523,7 +523,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70792
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -533,7 +533,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 71122
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			/*End migration for Fer.*/
 			
 			/*Start migration for Iode*/
@@ -544,7 +544,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 				AND e.siteCode = ito.location_id 
 				AND e.encounter_id = ito.encounter_id
 				AND ito.concept_id IN(70700,70773,70778,70783,70788,70793,71123)
-				AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+				AND (ito.value_datetime is not null);
 				/*Finding the last obs_group_id inserted */
 				TRUNCATE TABLE itech.obs_concept_group;
 				INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
@@ -562,7 +562,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id = cg.encounter_id
 			AND ito.concept_id IN(70700,70773,70778,70783,70788,70793,71123)
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 				INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -572,7 +572,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70700
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -582,7 +582,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70773
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -592,7 +592,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70778
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
@@ -603,7 +603,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70783
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -613,7 +613,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70788
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -623,7 +623,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70793
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -633,7 +633,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 71123
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			/*End migration for Iode*/
 			
 			/*Start migration for Déparasitage*/
@@ -644,7 +644,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 				AND e.siteCode = ito.location_id 
 				AND e.encounter_id = ito.encounter_id
 				AND ito.concept_id IN(70769,70774,70779,70784,70789,70794,71124)
-				AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+				AND (ito.value_datetime is not null);
 				/*Finding the last obs_group_id inserted */
 				TRUNCATE TABLE itech.obs_concept_group;
 				INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
@@ -661,7 +661,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id = cg.encounter_id
 			AND ito.concept_id IN(70769,70774,70779,70784,70789,70794,71124)
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -671,7 +671,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70769
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -681,7 +681,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70774
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -691,7 +691,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70779
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -701,7 +701,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70784
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -711,7 +711,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70789
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 				INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -721,7 +721,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70794
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -731,7 +731,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 71124
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			/*End migration for Déparasitage*/
 			
@@ -743,7 +743,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 				AND e.siteCode = ito.location_id 
 				AND e.encounter_id = ito.encounter_id
 				AND ito.concept_id IN(70770,70775,70780,70785,70790,70795,71125)
-				AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+				AND (ito.value_datetime is not null);
 				/*Finding the last obs_group_id inserted */
 				TRUNCATE TABLE itech.obs_concept_group;
 				INSERT INTO itech.obs_concept_group (obs_id,person_id,concept_id,encounter_id)
@@ -760,7 +760,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id = cg.encounter_id
 			AND ito.concept_id IN(70770,70775,70780,70785,70790,70795,71125)
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 				INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -770,7 +770,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70770
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -780,7 +780,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70775 
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
@@ -791,7 +791,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70780
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -801,7 +801,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70785
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
 			value_datetime,creator,date_created,uuid)
@@ -811,7 +811,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70790
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
@@ -822,7 +822,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 70795
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			
 			
 			INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,obs_group_id,
@@ -833,7 +833,7 @@ INSERT INTO obs(person_id,concept_id,encounter_id,obs_datetime,location_id,value
 			AND e.encounter_id = ito.encounter_id
 			AND c.encounter_id=cg.encounter_id
 			AND ito.concept_id = 71125
-			AND (ito.value_datetime <> "" AND ito.value_datetime is not null);
+			AND (ito.value_datetime is not null);
 			/*End migration for Zinc*/
 			
     /*End migration for SUPPLEMENTATION EN VITAMINE A (VIT.A),FER,IODE,ZINC,DEPARASITAGE(DEP.)*/
